@@ -10,16 +10,18 @@ import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
+
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHolder> {
 
     private static final String TAG = MovieAdapter.class.getSimpleName();
 
-    private int mNumberItems;
+    private ArrayList<Movie> mMovieArrayList;
 
     private static int viewHolderCount;
 
-    public MovieAdapter (int mNumberItems) {
-        this.mNumberItems = mNumberItems;
+    public MovieAdapter (ArrayList<Movie> movieArrayList) {
+        this.mMovieArrayList = movieArrayList;
         viewHolderCount = 0;
     }
 
@@ -46,7 +48,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
 
     @Override
     public int getItemCount() {
-        return mNumberItems;
+        return mMovieArrayList.size();
     }
 
     class MovieViewHolder extends RecyclerView.ViewHolder {
@@ -60,9 +62,10 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         }
 
         void bind(int position) {
-            // TODO Hacer
-            String url = null;
-            Picasso.with(listItemImageView.getContext()).load(url).into(listItemImageView);
+            Movie movie = mMovieArrayList.get(position);
+            Picasso.with(listItemImageView.getContext())
+                    .load(movie.getPosterURL(Movie.POSTER_SIZE_MOBILE))
+                    .into(listItemImageView);
         }
 
     }
