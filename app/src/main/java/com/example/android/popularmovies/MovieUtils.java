@@ -33,6 +33,7 @@ public class MovieUtils {
 
                 movieArrayList.add(indexMovie);
             }
+            Log.d(TAG, "Parsed " + resultsArray.length() + " results");
         } catch (JSONException e) {
             e.printStackTrace();
             Log.e(TAG, "JSON Error");
