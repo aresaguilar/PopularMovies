@@ -1,7 +1,10 @@
 package com.example.android.popularmovies;
 
 
-public class Movie {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class Movie implements Parcelable {
 
     private static final String POSTER_BASE_URL = "http://image.tmdb.org/t/p/";
     public static final String POSTER_SIZE_MOBILE = "w185";
@@ -37,5 +40,48 @@ public class Movie {
 
     public String getPosterURL(String size) {
         return POSTER_BASE_URL + size + this.poster_path;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(id);
+        dest.writeString(title);
+        dest.writeString(original_title);
+        dest.writeString(overview);
+        dest.writeString(release_date);
+        dest.writeString(poster_path);
+        dest.writeString(backdrop_path);
+        dest.writeDouble(popularity);
+        dest.writeInt(vote_average);
+        dest.writeInt(vote_count);
+    }
+
+    public static final Parcelable.Creator<Movie> CREATOR
+            = new Parcelable.Creator<Movie>() {
+        public Movie createFromParcel(Parcel in) {
+            return new Movie(in);
+        }
+
+        public Movie[] newArray(int size) {
+            return new Movie[size];
+        }
+    };
+
+    public Movie (Parcel in) {
+        this.id = in.readInt();
+        this.title = in.readString();
+        this.original_title = in.readString();
+        this.overview = in.readString();
+        this.release_date = in.readString();
+        this.poster_path = in.readString();
+        this.backdrop_path = in.readString();
+        this.popularity = in.readDouble();
+        this.vote_average = in.readInt();
+        this.vote_count = in.readInt();
     }
 }
