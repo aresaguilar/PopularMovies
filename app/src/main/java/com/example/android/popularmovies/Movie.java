@@ -21,6 +21,47 @@ public class Movie implements Parcelable {
 
     private double popularity;
     private  int vote_average;
+
+    public int getVote_count() {
+        return vote_count;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getOriginal_title() {
+        return original_title;
+    }
+
+    public String getOverview() {
+        return overview;
+    }
+
+    public String getRelease_date() {
+        return release_date;
+    }
+
+    public String getPoster_path() {
+        return poster_path;
+    }
+
+    public String getBackdrop_path() {
+        return backdrop_path;
+    }
+
+    public double getPopularity() {
+        return popularity;
+    }
+
+    public int getVote_average() {
+        return vote_average;
+    }
+
     private int vote_count;
 
     public Movie(int id, String title, String original_title,

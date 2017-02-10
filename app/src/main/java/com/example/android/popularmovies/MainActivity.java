@@ -1,7 +1,10 @@
 package com.example.android.popularmovies;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -14,7 +17,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MovieAdapter.ListItemClickListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -41,9 +44,7 @@ public class MainActivity extends AppCompatActivity {
         mMoviesList.setLayoutManager(gridLayoutManager);
         mMoviesList.setHasFixedSize(true);
 
-        new FetchMoviesTask().execute();
-        //mAdapter = new MovieAdapter(new ArrayList<Movie>());
-        //mMoviesList.setAdapter(mAdapter);
+        new FetchMoviesTask(this).execute();
     }
 
     private void showRecyclerView() {
@@ -56,8 +57,22 @@ public class MainActivity extends AppCompatActivity {
         this.mMoviesList.setVisibility(View.INVISIBLE);
     }
 
+    @Override
+    public void onListItemClick(Movie movieClicked) {
+        Intent intent = new Intent(this, MovieActivity.class);
+        intent.putExtra("movie", (Parcelable) movieClicked);
+        Log.d(TAG, "Launching activity with movie " + movieClicked.getTitle());
+        startActivity(intent);
+    }
+
 
     public class FetchMoviesTask extends AsyncTask<Void, Void, Void> {
+
+        private final MovieAdapter.ListItemClickListener listener;
+
+        public FetchMoviesTask(MovieAdapter.ListItemClickListener listener) {
+            this.listener = listener;
+        }
 
         @Override
         protected Void doInBackground(Void... params) {
@@ -106,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         protected void loadMovieAdapter(ArrayList<Movie> array) {
-            mAdapter = new MovieAdapter(array);
+            mAdapter = new MovieAdapter(array, listener);
             mMoviesList.setAdapter(mAdapter);
         }
     }

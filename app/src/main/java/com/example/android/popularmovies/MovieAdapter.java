@@ -17,12 +17,17 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
     private static final String TAG = MovieAdapter.class.getSimpleName();
 
     private ArrayList<Movie> mMovieArrayList;
-
+    private ListItemClickListener mListener;
     private static int viewHolderCount;
 
-    public MovieAdapter (ArrayList<Movie> movieArrayList) {
+    public MovieAdapter (ArrayList<Movie> movieArrayList, ListItemClickListener listener) {
         this.mMovieArrayList = movieArrayList;
+        this.mListener = listener;
         viewHolderCount = 0;
+    }
+
+    public interface ListItemClickListener {
+        void onListItemClick(Movie movieClicked);
     }
 
     @Override
@@ -51,22 +56,29 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         return mMovieArrayList.size();
     }
 
-    class MovieViewHolder extends RecyclerView.ViewHolder {
+    class MovieViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         ImageView listItemImageView;
+        Movie mMovie;
 
         public MovieViewHolder(View itemView) {
             super(itemView);
 
             listItemImageView = (ImageView) itemView.findViewById(R.id.iv_item_poster);
+            listItemImageView.setOnClickListener(this);
         }
 
         void bind(int position) {
-            Movie movie = mMovieArrayList.get(position);
+            mMovie = mMovieArrayList.get(position);
             Picasso.with(listItemImageView.getContext())
-                    .load(movie.getPosterURL(Movie.POSTER_SIZE_MOBILE))
+                    .load(mMovie.getPosterURL(Movie.POSTER_SIZE_MOBILE))
                     .into(listItemImageView);
         }
 
+        @Override
+        public void onClick(View v) {
+            int clickedPosition = getAdapterPosition();
+            mListener.onListItemClick(mMovieArrayList.get(clickedPosition));
+        }
     }
 }
