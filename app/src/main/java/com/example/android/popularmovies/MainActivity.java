@@ -1,10 +1,8 @@
 package com.example.android.popularmovies;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -59,8 +57,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
 
     @Override
     public void onListItemClick(Movie movieClicked) {
-        Intent intent = new Intent(this, MovieActivity.class);
-        intent.putExtra("movie", (Parcelable) movieClicked);
+        Intent intent = new Intent(MainActivity.this, MovieActivity.class);
+        intent.putExtra("movie", movieClicked);
         Log.d(TAG, "Launching activity with movie " + movieClicked.getTitle());
         startActivity(intent);
     }

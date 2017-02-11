@@ -21,6 +21,7 @@ public class Movie implements Parcelable {
 
     private double popularity;
     private  int vote_average;
+    private int vote_count;
 
     public int getVote_count() {
         return vote_count;
@@ -62,7 +63,19 @@ public class Movie implements Parcelable {
         return vote_average;
     }
 
-    private int vote_count;
+
+    public Movie (Parcel in) {
+        this.id = in.readInt();
+        this.title = in.readString();
+        this.original_title = in.readString();
+        this.overview = in.readString();
+        this.release_date = in.readString();
+        this.poster_path = in.readString();
+        this.backdrop_path = in.readString();
+        this.popularity = in.readDouble();
+        this.vote_average = in.readInt();
+        this.vote_count = in.readInt();
+    }
 
     public Movie(int id, String title, String original_title,
                  String overview, String release_date, String poster_path,
@@ -112,17 +125,4 @@ public class Movie implements Parcelable {
             return new Movie[size];
         }
     };
-
-    public Movie (Parcel in) {
-        this.id = in.readInt();
-        this.title = in.readString();
-        this.original_title = in.readString();
-        this.overview = in.readString();
-        this.release_date = in.readString();
-        this.poster_path = in.readString();
-        this.backdrop_path = in.readString();
-        this.popularity = in.readDouble();
-        this.vote_average = in.readInt();
-        this.vote_count = in.readInt();
-    }
 }
