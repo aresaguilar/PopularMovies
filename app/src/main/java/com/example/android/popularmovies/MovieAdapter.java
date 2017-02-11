@@ -30,6 +30,11 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         void onListItemClick(Movie movieClicked);
     }
 
+    public void changeData(ArrayList<Movie> movieArrayList) {
+        this.mMovieArrayList = movieArrayList;
+        notifyDataSetChanged();
+    }
+
     @Override
     public MovieViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Context context = parent.getContext();

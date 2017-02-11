@@ -7,6 +7,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -27,6 +29,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
     private ArrayList<Movie> mTopRatedList;
     private ArrayList<Movie> mPopularList;
 
+    private boolean SORT_POPULAR = true;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,6 +47,45 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
         mMoviesList.setHasFixedSize(true);
 
         new FetchMoviesTask(this).execute();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+
+        if (!SORT_POPULAR) {
+            menu.findItem(R.id.maction_sort_popular).setVisible(true);
+            menu.findItem(R.id.maction_sort_top_rated).setVisible(false);
+        } else {
+            menu.findItem(R.id.maction_sort_popular).setVisible(false);
+            menu.findItem(R.id.maction_sort_top_rated).setVisible(true);
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int itemThatWasClickedId = item.getItemId();
+        if (itemThatWasClickedId == R.id.maction_sort_popular) {
+            SORT_POPULAR = true;
+            invalidateOptionsMenu();
+            if (mPopularList != null && mTopRatedList != null) {
+                if (mAdapter != null) {
+                    mAdapter.changeData(mPopularList);
+                }
+            }
+            return true;
+        } else if (itemThatWasClickedId == R.id.maction_sort_top_rated) {
+            SORT_POPULAR = false;
+            invalidateOptionsMenu();
+            if (mPopularList != null && mTopRatedList != null) {
+                if (mAdapter != null) {
+                    mAdapter.changeData(mTopRatedList);
+                }
+            }
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void showRecyclerView() {
@@ -106,10 +149,12 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
             super.onPostExecute(s);
 
             mLoadingProgressBar.setVisibility(View.INVISIBLE);
-            // TODO Usar preferencias
 
             if (mPopularList != null && mTopRatedList != null) {
-                loadMovieAdapter(mPopularList);
+                if (SORT_POPULAR)
+                    loadMovieAdapter(mPopularList);
+                else
+                    loadMovieAdapter(mTopRatedList);
                 showRecyclerView();
                 Log.d(TAG, "Updated data and adapter");
             } else {
