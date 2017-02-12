@@ -118,8 +118,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
         @Override
         protected Void doInBackground(Void... params) {
 
-            URL mTopRatedUrl = NetworkUtils.buildUrl(NetworkUtils.TOPRATED_EP, getString(R.string.themoviedb_api_key));
-            URL mPopularUrl = NetworkUtils.buildUrl(NetworkUtils.POPULAR_EP, getString(R.string.themoviedb_api_key));
+            URL mTopRatedUrl = NetworkUtils.buildUrl(NetworkUtils.TOPRATED_EP, BuildConfig.THEMOVIEDB_API_KEY);
+            URL mPopularUrl = NetworkUtils.buildUrl(NetworkUtils.POPULAR_EP, BuildConfig.THEMOVIEDB_API_KEY);
 
             try {
                 String mTopRatedQuery = NetworkUtils.getResponseFromHttpUrl(mTopRatedUrl);
