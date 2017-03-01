@@ -19,7 +19,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements MovieAdapter.ListItemClickListener {
+public class MainActivity extends AppCompatActivity
+        implements MovieAdapter.ListItemClickListener,
+            SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -59,6 +61,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
 
         sort_option = sharedPreferences.getString(getString(R.string.pref_sort_key),
                 getString(R.string.pref_sort_popular_value));
+
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -96,6 +100,20 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
         startActivity(intent);
     }
 
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key.equals(getString(R.string.pref_sort_key))) {
+            sort_option = sharedPreferences.getString(key, getString(R.string.pref_sort_popular_value));
+            new FetchMoviesTask(this).execute();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .unregisterOnSharedPreferenceChangeListener(this);
+    }
 
     public class FetchMoviesTask extends AsyncTask<Void, Void, Void> {
 
