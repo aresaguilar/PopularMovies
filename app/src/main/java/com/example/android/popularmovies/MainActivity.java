@@ -85,15 +85,7 @@ public class MainActivity extends AppCompatActivity
         Bundle bundle = new Bundle();
         bundle.putString(MOVIES_QUERY_URL_EXTRA, String.valueOf(mMoviesUrl));
 
-        LoaderManager loaderManager = getSupportLoaderManager();
-        Loader<String> moviesLoader = loaderManager.getLoader(MOVIES_LOADER_ID);
-        if (moviesLoader == null) {
-            loaderManager.initLoader(MOVIES_LOADER_ID, bundle, this);
-            Log.d(TAG, "Loader init");
-        } else {
-            loaderManager.restartLoader(MOVIES_LOADER_ID, bundle, this);
-            Log.d(TAG, "Loader restart");
-        }
+        getSupportLoaderManager().restartLoader(MOVIES_LOADER_ID, bundle, this);
     }
 
     @Override
@@ -150,6 +142,8 @@ public class MainActivity extends AppCompatActivity
     public Loader<String> onCreateLoader(int id, final Bundle args) {
         return new AsyncTaskLoader<String>(this) {
 
+            private String mMoviesJson;
+
             @Override
             protected void onStartLoading() {
                 super.onStartLoading();
@@ -157,6 +151,12 @@ public class MainActivity extends AppCompatActivity
                     return;
                 }
                 mLoadingProgressBar.setVisibility(View.VISIBLE);
+
+                if (mMoviesJson != null) {
+                    deliverResult(mMoviesJson);
+                } else {
+                    forceLoad();
+                }
             }
 
             @Override
@@ -175,13 +175,19 @@ public class MainActivity extends AppCompatActivity
                     return null;
                 }
             }
+
+            @Override
+            public void deliverResult(String data) {
+                mLoadingProgressBar.setVisibility(View.INVISIBLE);
+                mMoviesJson = data;
+                super.deliverResult(data);
+            }
         };
     }
 
     @Override
     public void onLoadFinished(Loader<String> loader, String data) {
         mLoadingProgressBar.setVisibility(View.INVISIBLE);
-
         if (data != null) {
             mMoviesArray = new ArrayList<>();
             MovieUtils.parseJSON(data, mMoviesArray);
