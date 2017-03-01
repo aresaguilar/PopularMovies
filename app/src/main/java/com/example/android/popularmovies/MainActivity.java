@@ -39,6 +39,8 @@ public class MainActivity extends AppCompatActivity
     private TextView mErrorTextView;
     private ProgressBar mLoadingProgressBar;
 
+    private Toast mToast;
+
     private ArrayList<Movie> mMoviesArray;
 
     private String sort_option;
@@ -126,18 +128,26 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onListItemStar(Movie movieClicked) {
+        if (mToast != null) {
+            mToast.cancel();
+        }
         // TODO Add to favorites
-        Toast.makeText(this,
-                movieClicked.getTitle() + getString(R.string.added_to_favorites_action),
-                Toast.LENGTH_LONG).show();
+        mToast = Toast.makeText(this,
+                movieClicked.getTitle() +" "+ getString(R.string.added_to_favorites_action),
+                Toast.LENGTH_LONG);
+        mToast.show();
     }
 
     @Override
     public void onListItemUnstar(Movie movieClicked) {
+        if (mToast != null) {
+            mToast.cancel();
+        }
         // TODO Remove from favorites
-        Toast.makeText(this,
-                movieClicked.getTitle() + getString(R.string.removed_from_favorites_action),
-                Toast.LENGTH_LONG).show();
+        mToast = Toast.makeText(this,
+                movieClicked.getTitle() +" "+ getString(R.string.removed_from_favorites_action),
+                Toast.LENGTH_LONG);
+        mToast.show();
     }
 
     @Override
