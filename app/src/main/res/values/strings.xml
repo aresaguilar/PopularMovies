@@ -1,6 +1,20 @@
 <resources>
+    <!-- Main Activity Strings -->
     <string name="app_name">Popular Movies</string>
     <string name="error_message">Error loading content</string>
-    <string name="action_sort_top_rated">Top Rated</string>
-    <string name="action_sort_popular">Popular</string>
+
+    <!-- Settings Strings -->
+    <string name="action_settings">Settings</string>
+    <!-- Sorting Preference Labels -->
+    <string name="pref_sort_label">Sorting Mode</string>
+    <string name="pref_sort_label_popular">Popular Now</string>
+    <string name="pref_sort_label_top">Top Rated</string>
+    <string name="pref_sort_label_favorites">Favorites</string>
+    <!-- Sorting Preference Key -->
+    <string name="pref_sort_key" translatable="false">sort</string>
+    <!-- Sorting Preference Values -->
+    <string name="pref_sort_popular_value" translatable="false">popular</string>
+    <string name="pref_sort_top_value" translatable="false">top</string>
+    <string name="pref_sort_favorites_value" translatable="false">favorites</string>
+
 </resources>

@@ -1,8 +1,10 @@
 package com.example.android.popularmovies;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -49,41 +51,25 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
         new FetchMoviesTask(this).execute();
     }
 
+    private void setupSharedPreferences() {
+        SharedPreferences sharedPreferences =
+                PreferenceManager.getDefaultSharedPreferences(this);
+
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-
-        if (!SORT_POPULAR) {
-            menu.findItem(R.id.maction_sort_popular).setVisible(true);
-            menu.findItem(R.id.maction_sort_top_rated).setVisible(false);
-        } else {
-            menu.findItem(R.id.maction_sort_popular).setVisible(false);
-            menu.findItem(R.id.maction_sort_top_rated).setVisible(true);
-        }
-
+        getMenuInflater().inflate(R.menu.main_menu, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemThatWasClickedId = item.getItemId();
-        if (itemThatWasClickedId == R.id.maction_sort_popular) {
-            SORT_POPULAR = true;
-            invalidateOptionsMenu();
-            if (mPopularList != null && mTopRatedList != null) {
-                if (mAdapter != null) {
-                    mAdapter.changeData(mPopularList);
-                }
-            }
+        if (itemThatWasClickedId == R.id.action_settings) {
+            Intent startSettingsActivity = new Intent(MainActivity.this, SettingsActivity.class);
+            startActivity(startSettingsActivity);
             return true;
-        } else if (itemThatWasClickedId == R.id.maction_sort_top_rated) {
-            SORT_POPULAR = false;
-            invalidateOptionsMenu();
-            if (mPopularList != null && mTopRatedList != null) {
-                if (mAdapter != null) {
-                    mAdapter.changeData(mTopRatedList);
-                }
-            }
         }
         return super.onOptionsItemSelected(item);
     }
