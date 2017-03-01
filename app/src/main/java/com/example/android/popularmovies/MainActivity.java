@@ -28,10 +28,9 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
     private TextView mErrorTextView;
     private ProgressBar mLoadingProgressBar;
 
-    private ArrayList<Movie> mTopRatedList;
-    private ArrayList<Movie> mPopularList;
+    private ArrayList<Movie> mMoviesArray;
 
-    private boolean SORT_POPULAR = true;
+    private String sort_option;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +47,9 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
         mMoviesList.setLayoutManager(gridLayoutManager);
         mMoviesList.setHasFixedSize(true);
 
+        /* Setup Shared Preferences */
+        setupSharedPreferences();
+
         new FetchMoviesTask(this).execute();
     }
 
@@ -55,6 +57,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
         SharedPreferences sharedPreferences =
                 PreferenceManager.getDefaultSharedPreferences(this);
 
+        sort_option = sharedPreferences.getString(getString(R.string.pref_sort_key),
+                getString(R.string.pref_sort_popular_value));
     }
 
     @Override
@@ -104,18 +108,20 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
         @Override
         protected Void doInBackground(Void... params) {
 
-            URL mTopRatedUrl = NetworkUtils.buildUrl(NetworkUtils.TOPRATED_EP, BuildConfig.THEMOVIEDB_API_KEY);
-            URL mPopularUrl = NetworkUtils.buildUrl(NetworkUtils.POPULAR_EP, BuildConfig.THEMOVIEDB_API_KEY);
+            URL mMoviesUrl;
+
+            if (sort_option.equals(getString(R.string.pref_sort_popular_value))) {
+                mMoviesUrl = NetworkUtils.buildUrl(NetworkUtils.POPULAR_EP, BuildConfig.THEMOVIEDB_API_KEY);
+            } else {//if (sort_option.equals(getString(R.string.pref_sort_top_value))) {
+                mMoviesUrl = NetworkUtils.buildUrl(NetworkUtils.TOPRATED_EP, BuildConfig.THEMOVIEDB_API_KEY);
+            }
 
             try {
-                String mTopRatedQuery = NetworkUtils.getResponseFromHttpUrl(mTopRatedUrl);
-                String mPopularQuery = NetworkUtils.getResponseFromHttpUrl(mPopularUrl);
+                String mMoviesQuery = NetworkUtils.getResponseFromHttpUrl(mMoviesUrl);
 
-                mTopRatedList = new ArrayList<>();
-                mPopularList = new ArrayList<>();
+                mMoviesArray = new ArrayList<>();
 
-                MovieUtils.parseJSON(mTopRatedQuery, mTopRatedList);
-                MovieUtils.parseJSON(mPopularQuery, mPopularList);
+                MovieUtils.parseJSON(mMoviesQuery, mMoviesArray);
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -136,11 +142,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
 
             mLoadingProgressBar.setVisibility(View.INVISIBLE);
 
-            if (mPopularList != null && mTopRatedList != null) {
-                if (SORT_POPULAR)
-                    loadMovieAdapter(mPopularList);
-                else
-                    loadMovieAdapter(mTopRatedList);
+            if (mMoviesArray != null) {
+                loadMovieAdapter(mMoviesArray);
                 showRecyclerView();
                 Log.d(TAG, "Updated data and adapter");
             } else {
