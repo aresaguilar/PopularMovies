@@ -45,7 +45,7 @@ public class MovieActivity extends AppCompatActivity {
         mOverviewTextView = (TextView) findViewById(R.id.tv_overview);
         mPosterImageView = (ImageView) findViewById(R.id.iv_poster);
 
-        Movie mMovie = getIntent().getParcelableExtra("movie");
+        Movie mMovie = getIntent().getParcelableExtra(MainActivity.MOVIE_EXTRA);
 
         Log.d(TAG, "Launched with movie " + mMovie.getTitle());
 
