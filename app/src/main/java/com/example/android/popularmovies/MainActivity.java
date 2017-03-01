@@ -17,6 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.net.URL;
@@ -121,6 +122,22 @@ public class MainActivity extends AppCompatActivity
         intent.putExtra(MOVIE_EXTRA, movieClicked);
         Log.d(TAG, "Launching activity with movie " + movieClicked.getTitle());
         startActivity(intent);
+    }
+
+    @Override
+    public void onListItemStar(Movie movieClicked) {
+        // TODO Add to favorites
+        Toast.makeText(this,
+                movieClicked.getTitle() + getString(R.string.added_to_favorites_action),
+                Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onListItemUnstar(Movie movieClicked) {
+        // TODO Remove from favorites
+        Toast.makeText(this,
+                movieClicked.getTitle() + getString(R.string.removed_from_favorites_action),
+                Toast.LENGTH_LONG).show();
     }
 
     @Override

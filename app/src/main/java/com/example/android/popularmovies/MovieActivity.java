@@ -52,7 +52,7 @@ public class MovieActivity extends AppCompatActivity {
         if (mMovie != null) {
             mTitleTextView.setText(mMovie.getTitle());
             mDateTextView.setText("Release date\n" + mMovie.getRelease_date() + "\n\n");
-            mRatingTextView.setText("Vote average\n" + mMovie.getVote_average() + "\n\n");
+            mRatingTextView.setText("Vote average\n" + mMovie.getVote_average() + "/10\n\n");
             mOverviewTextView.setText(mMovie.getOverview());
 
             int posterWidth = (int) getResources().getDimension(R.dimen.movieactivity_poster_width);

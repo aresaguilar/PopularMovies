@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.github.ivbaranov.mfb.MaterialFavoriteButton;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -28,6 +29,8 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
 
     public interface ListItemClickListener {
         void onListItemClick(Movie movieClicked);
+        void onListItemStar(Movie movieClicked);
+        void onListItemUnstar(Movie movieClicked);
     }
 
     public void changeData(ArrayList<Movie> movieArrayList) {
@@ -63,6 +66,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
     class MovieViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         ImageView listItemImageView;
+        MaterialFavoriteButton listItemFavoriteButton;
         Movie mMovie;
 
         public MovieViewHolder(View itemView) {
@@ -70,6 +74,19 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
 
             listItemImageView = (ImageView) itemView.findViewById(R.id.iv_item_poster);
             listItemImageView.setOnClickListener(this);
+
+            listItemFavoriteButton = (MaterialFavoriteButton) itemView.findViewById(R.id.btn_item_star);
+            listItemFavoriteButton.setOnFavoriteChangeListener(
+                    new MaterialFavoriteButton.OnFavoriteChangeListener() {
+                        @Override
+                        public void onFavoriteChanged(MaterialFavoriteButton buttonView, boolean favorite) {
+                            if (favorite) {
+                                mListener.onListItemStar(mMovieArrayList.get(getAdapterPosition()));
+                            } else {
+                                mListener.onListItemUnstar(mMovieArrayList.get(getAdapterPosition()));
+                            }
+                        }
+                    });
         }
 
         void bind(int position) {
@@ -82,7 +99,15 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         @Override
         public void onClick(View v) {
             int clickedPosition = getAdapterPosition();
-            mListener.onListItemClick(mMovieArrayList.get(clickedPosition));
+
+            switch (v.getId()) {
+                case R.id.iv_item_poster:
+                    mListener.onListItemClick(mMovieArrayList.get(clickedPosition));
+                    break;
+                default:
+                    break;
+            }
+
         }
     }
 }
