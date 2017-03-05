@@ -2,6 +2,8 @@ package com.example.android.popularmovies;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.LoaderManager;
@@ -19,6 +21,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.android.popularmovies.FavoriteMoviesContract.FavoriteMoviesEntry;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -30,19 +34,23 @@ public class MainActivity extends AppCompatActivity
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
+    /* Static IDs */
     private static final int MOVIES_LOADER_ID = 6;
     private static final String MOVIES_QUERY_URL_EXTRA = "url";
     public static final String MOVIE_EXTRA = "movie";
 
+    /* View related variables */
     private RecyclerView mMoviesList;
     private MovieAdapter mAdapter;
     private TextView mErrorTextView;
     private ProgressBar mLoadingProgressBar;
-
     private Toast mToast;
 
+    /* Data */
     private ArrayList<Movie> mMoviesArray;
+    private SQLiteDatabase mDb;
 
+    /* Preferences */
     private String sort_option;
 
     @Override
@@ -63,6 +71,10 @@ public class MainActivity extends AppCompatActivity
         /* Setup Shared Preferences */
         setupSharedPreferences();
 
+        /* Get the database */
+        MoviesDbHelper dbHelper = new MoviesDbHelper(this);
+        mDb = dbHelper.getWritableDatabase();
+
         makeMoviesQuery();
     }
 
@@ -76,6 +88,16 @@ public class MainActivity extends AppCompatActivity
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
+    private Cursor getAllFavoriteMovies() {
+        return mDb.query(FavoriteMoviesEntry.TABLE_NAME,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+    }
+
     private void makeMoviesQuery() {
         URL mMoviesUrl = null;
 
@@ -83,6 +105,10 @@ public class MainActivity extends AppCompatActivity
             mMoviesUrl = NetworkUtils.buildUrl(NetworkUtils.POPULAR_EP, BuildConfig.THEMOVIEDB_API_KEY);
         } else if (sort_option.equals(getString(R.string.pref_sort_top_value))) {
             mMoviesUrl = NetworkUtils.buildUrl(NetworkUtils.TOPRATED_EP, BuildConfig.THEMOVIEDB_API_KEY);
+        } else if (sort_option.equals(getString(R.string.pref_sort_favorites_value))) {
+            Cursor c = getAllFavoriteMovies();
+            // TODO create a new adapter
+            // mMoviesList.setAdapter();
         }
 
         Bundle bundle = new Bundle();
