@@ -12,6 +12,9 @@ public class MovieUtils {
 
     private static final String TAG = MovieUtils.class.getSimpleName();
 
+    private static final String POSTER_BASE_URL = "http://image.tmdb.org/t/p/";
+    public static final String POSTER_SIZE_MOBILE = "w185";
+
     public static void parseJSON(String jsonData, ArrayList<Movie> movieArrayList) {
         try {
             JSONObject mainObject = new JSONObject(jsonData);
@@ -38,5 +41,9 @@ public class MovieUtils {
             e.printStackTrace();
             Log.e(TAG, "JSON Error");
         }
+    }
+
+    public static String getPosterUrl(String poster_path, String size) {
+        return POSTER_BASE_URL + size + poster_path;
     }
 }

@@ -1,5 +1,6 @@
 package com.example.android.popularmovies;
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -21,7 +22,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.android.popularmovies.FavoriteMoviesContract.FavoriteMoviesEntry;
+import com.example.android.popularmovies.MoviesContract.MoviesEntry;
 
 import java.io.IOException;
 import java.net.URL;
@@ -35,7 +36,8 @@ public class MainActivity extends AppCompatActivity
     private static final String TAG = MainActivity.class.getSimpleName();
 
     /* Static IDs */
-    private static final int MOVIES_LOADER_ID = 6;
+    private static final int POPULAR_MOVIES_LOADER_ID = 66;
+    private static final int TOP_RATED_MOVIES_LOADER_ID = 77;
     private static final String MOVIES_QUERY_URL_EXTRA = "url";
     public static final String MOVIE_EXTRA = "movie";
 
@@ -47,7 +49,6 @@ public class MainActivity extends AppCompatActivity
     private Toast mToast;
 
     /* Data */
-    private ArrayList<Movie> mMoviesArray;
     private SQLiteDatabase mDb;
 
     /* Preferences */
@@ -75,6 +76,14 @@ public class MainActivity extends AppCompatActivity
         MoviesDbHelper dbHelper = new MoviesDbHelper(this);
         mDb = dbHelper.getWritableDatabase();
 
+        /* Load movies from database */
+        Cursor cursor = getAllMovies();
+        if (cursor.getCount() > 0) {
+            createOrUpdateAdapter(cursor);
+        } else {
+            mLoadingProgressBar.setVisibility(View.VISIBLE);
+        }
+
         makeMoviesQuery();
     }
 
@@ -88,33 +97,77 @@ public class MainActivity extends AppCompatActivity
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
+    private Cursor getAllMovies() {
+        if (sort_option.equals(getString(R.string.pref_sort_popular_value))) {
+            return getAllPopularMovies();
+        } else if (sort_option.equals(getString(R.string.pref_sort_top_value))) {
+            return getAllTopRatedMovies();
+        } else if (sort_option.equals(getString(R.string.pref_sort_favorites_value))) {
+            return getAllFavoriteMovies();
+        }
+        return null;
+    }
+
     private Cursor getAllFavoriteMovies() {
-        return mDb.query(FavoriteMoviesEntry.TABLE_NAME,
+        return mDb.query(MoviesEntry.TABLE_NAME,
                 null,
-                null,
+                MoviesEntry.COLUMN_NAME_FAVORITE + " = 1",
                 null,
                 null,
                 null,
                 null);
     }
 
+    private Cursor getAllPopularMovies() {
+        return mDb.query(MoviesEntry.TABLE_NAME,
+                null,
+                MoviesEntry.COLUMN_NAME_POPULAR + " = 1",
+                null,
+                null,
+                null,
+                null);
+    }
+
+    private Cursor getAllTopRatedMovies() {
+        return mDb.query(MoviesEntry.TABLE_NAME,
+                null,
+                MoviesEntry.COLUMN_NAME_TOP_RATED + " = 1",
+                null,
+                null,
+                null,
+                null);
+    }
+
+    private long addNewMovie(Movie movie, boolean popular, boolean topRated) {
+        ContentValues cv = new ContentValues();
+        cv.put(MoviesEntry.COLUMN_NAME_ID, movie.getId());
+        cv.put(MoviesEntry.COLUMN_NAME_TITLE, movie.getTitle());
+        cv.put(MoviesEntry.COLUMN_NAME_POSTER, movie.getPoster_path());
+        cv.put(MoviesEntry.COLUMN_NAME_DATE, movie.getRelease_date());
+        cv.put(MoviesEntry.COLUMN_NAME_RATING, movie.getVote_average());
+        cv.put(MoviesEntry.COLUMN_NAME_OVERVIEW, movie.getOverview());
+        if (popular)
+            cv.put(MoviesEntry.COLUMN_NAME_POPULAR, 1);
+        if (topRated)
+            cv.put(MoviesEntry.COLUMN_NAME_TOP_RATED, 1);
+
+        return mDb.insert(MoviesEntry.TABLE_NAME, null, cv);
+    }
+
     private void makeMoviesQuery() {
-        URL mMoviesUrl = null;
+        URL mTopRatedMoviesUrl = null;
+        URL mPopularMoviesUrl = null;
 
-        if (sort_option.equals(getString(R.string.pref_sort_popular_value))) {
-            mMoviesUrl = NetworkUtils.buildUrl(NetworkUtils.POPULAR_EP, BuildConfig.THEMOVIEDB_API_KEY);
-        } else if (sort_option.equals(getString(R.string.pref_sort_top_value))) {
-            mMoviesUrl = NetworkUtils.buildUrl(NetworkUtils.TOPRATED_EP, BuildConfig.THEMOVIEDB_API_KEY);
-        } else if (sort_option.equals(getString(R.string.pref_sort_favorites_value))) {
-            Cursor c = getAllFavoriteMovies();
-            // TODO create a new adapter
-            // mMoviesList.setAdapter();
-        }
+        mPopularMoviesUrl = NetworkUtils.buildUrl(NetworkUtils.POPULAR_EP, BuildConfig.THEMOVIEDB_API_KEY);
+        mTopRatedMoviesUrl = NetworkUtils.buildUrl(NetworkUtils.TOPRATED_EP, BuildConfig.THEMOVIEDB_API_KEY);
 
-        Bundle bundle = new Bundle();
-        bundle.putString(MOVIES_QUERY_URL_EXTRA, String.valueOf(mMoviesUrl));
+        Bundle popularMoviesBundle = new Bundle();
+        popularMoviesBundle.putString(MOVIES_QUERY_URL_EXTRA, String.valueOf(mPopularMoviesUrl));
+        Bundle topRatedMoviesBundle = new Bundle();
+        topRatedMoviesBundle.putString(MOVIES_QUERY_URL_EXTRA, String.valueOf(mTopRatedMoviesUrl));
 
-        getSupportLoaderManager().restartLoader(MOVIES_LOADER_ID, bundle, this);
+        getSupportLoaderManager().restartLoader(POPULAR_MOVIES_LOADER_ID, popularMoviesBundle, this);
+        getSupportLoaderManager().restartLoader(TOP_RATED_MOVIES_LOADER_ID, topRatedMoviesBundle, this);
     }
 
     @Override
@@ -145,33 +198,39 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onListItemClick(Movie movieClicked) {
+    public void onListItemClick(long id) {
         Intent intent = new Intent(MainActivity.this, MovieActivity.class);
-        intent.putExtra(MOVIE_EXTRA, movieClicked);
-        Log.d(TAG, "Launching activity with movie " + movieClicked.getTitle());
+        intent.putExtra(MOVIE_EXTRA, id);
+        Log.d(TAG, "Launching activity with movie " + id);
         startActivity(intent);
     }
 
     @Override
-    public void onListItemStar(Movie movieClicked) {
+    public void onListItemStar(long id) {
+        ContentValues cv = new ContentValues();
+        cv.put(MoviesEntry.COLUMN_NAME_FAVORITE, 1);
+        mDb.update(MoviesEntry.TABLE_NAME, cv, MoviesEntry._ID + " = " + id, null);
+
         if (mToast != null) {
             mToast.cancel();
         }
-        // TODO Add to favorites
         mToast = Toast.makeText(this,
-                movieClicked.getTitle() +" "+ getString(R.string.added_to_favorites_action),
+                id +" "+ getString(R.string.added_to_favorites_action),
                 Toast.LENGTH_LONG);
         mToast.show();
     }
 
     @Override
-    public void onListItemUnstar(Movie movieClicked) {
+    public void onListItemUnstar(long id) {
+        ContentValues cv = new ContentValues();
+        cv.put(MoviesEntry.COLUMN_NAME_FAVORITE, 0);
+        mDb.update(MoviesEntry.TABLE_NAME, cv, MoviesEntry._ID + " = " + id, null);
+
         if (mToast != null) {
             mToast.cancel();
         }
-        // TODO Remove from favorites
         mToast = Toast.makeText(this,
-                movieClicked.getTitle() +" "+ getString(R.string.removed_from_favorites_action),
+                id +" "+ getString(R.string.removed_from_favorites_action),
                 Toast.LENGTH_LONG);
         mToast.show();
     }
@@ -180,7 +239,7 @@ public class MainActivity extends AppCompatActivity
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (key.equals(getString(R.string.pref_sort_key))) {
             sort_option = sharedPreferences.getString(key, getString(R.string.pref_sort_popular_value));
-            makeMoviesQuery();
+            createOrUpdateAdapter(getAllMovies());
         }
     }
 
@@ -240,18 +299,52 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onLoadFinished(Loader<String> loader, String data) {
-        mLoadingProgressBar.setVisibility(View.INVISIBLE);
-        if (data != null) {
-            mMoviesArray = new ArrayList<>();
-            MovieUtils.parseJSON(data, mMoviesArray);
-            mAdapter = new MovieAdapter(mMoviesArray, MainActivity.this);
-            mMoviesList.setAdapter(mAdapter);
-            showRecyclerView();
-            Log.d(TAG, "Updated data and adapter");
-        } else {
+        if (data == null) {
             showErrorTextView();
-            Log.d(TAG, "Error fetching content");
+            return;
         }
+
+        ArrayList<Movie> mMoviesArray = new ArrayList<>();
+        MovieUtils.parseJSON(data, mMoviesArray);
+
+        if (loader.getId() == POPULAR_MOVIES_LOADER_ID) {
+            deleteAllMovies(true, false, false);
+            for (Movie movie : mMoviesArray)
+                addNewMovie(movie, true, false);
+
+            if (sort_option.equals(getString(R.string.pref_sort_popular_value))) {
+                mLoadingProgressBar.setVisibility(View.INVISIBLE);
+                createOrUpdateAdapter(getAllPopularMovies());
+            }
+
+        } else if (loader.getId() == TOP_RATED_MOVIES_LOADER_ID) {
+            deleteAllMovies(false, true, false);
+            for (Movie movie : mMoviesArray)
+                addNewMovie(movie, false, true);
+
+            if (sort_option.equals(getString(R.string.pref_sort_top_value))) {
+                mLoadingProgressBar.setVisibility(View.INVISIBLE);
+                createOrUpdateAdapter(getAllTopRatedMovies());
+            }
+        }
+    }
+
+    public void createOrUpdateAdapter(Cursor cursor) {
+        if (mAdapter == null) {
+            mAdapter = new MovieAdapter(cursor, MainActivity.this);
+            mMoviesList.setAdapter(mAdapter);
+        } else {
+            mAdapter.changeCursor(cursor);
+        }
+        showRecyclerView();
+    }
+
+    public long deleteAllMovies(boolean popular, boolean top_rated, boolean favorites) {
+        String whPopular = MoviesEntry.COLUMN_NAME_POPULAR + (popular ? " = 1" : " = 0");
+        String whTopRated = MoviesEntry.COLUMN_NAME_TOP_RATED + (top_rated ? " = 1" : " = 0");
+        String whFavorites = MoviesEntry.COLUMN_NAME_FAVORITE + (favorites ? " = 1" : " = 0");
+
+        return mDb.delete(MoviesEntry.TABLE_NAME, whPopular + " AND " + whTopRated + " AND " + whFavorites, null);
     }
 
     @Override

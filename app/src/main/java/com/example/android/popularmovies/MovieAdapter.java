@@ -1,41 +1,34 @@
 package com.example.android.popularmovies;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.example.android.popularmovies.MoviesContract.MoviesEntry;
 import com.github.ivbaranov.mfb.MaterialFavoriteButton;
 import com.squareup.picasso.Picasso;
-
-import java.util.ArrayList;
 
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHolder> {
 
     private static final String TAG = MovieAdapter.class.getSimpleName();
 
-    private ArrayList<Movie> mMovieArrayList;
+    private Cursor mCursor;
     private ListItemClickListener mListener;
-    private static int viewHolderCount;
 
-    public MovieAdapter (ArrayList<Movie> movieArrayList, ListItemClickListener listener) {
-        this.mMovieArrayList = movieArrayList;
+
+    public MovieAdapter (Cursor cursor, ListItemClickListener listener) {
+        this.mCursor = cursor;
         this.mListener = listener;
-        viewHolderCount = 0;
     }
 
     public interface ListItemClickListener {
-        void onListItemClick(Movie movieClicked);
-        void onListItemStar(Movie movieClicked);
-        void onListItemUnstar(Movie movieClicked);
-    }
-
-    public void changeData(ArrayList<Movie> movieArrayList) {
-        this.mMovieArrayList = movieArrayList;
-        notifyDataSetChanged();
+        void onListItemClick(long id);
+        void onListItemStar(long id);
+        void onListItemUnstar(long id);
     }
 
     @Override
@@ -47,9 +40,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         View view = inflater.inflate(layoutIdForListItem, parent, false);
         MovieViewHolder viewHolder = new MovieViewHolder(view);
 
-        viewHolderCount++;
-        Log.d(TAG, "onCreateViewHolder: number of ViewHolders created: "
-                + viewHolderCount);
         return viewHolder;
     }
 
@@ -60,17 +50,25 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
 
     @Override
     public int getItemCount() {
-        return mMovieArrayList.size();
+        return mCursor.getCount();
+    }
+
+    public void changeCursor(Cursor cursor) {
+        mCursor.close();
+        mCursor = cursor;
+        notifyDataSetChanged();
     }
 
     class MovieViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
+        View itemView;
         ImageView listItemImageView;
         MaterialFavoriteButton listItemFavoriteButton;
-        Movie mMovie;
 
         public MovieViewHolder(View itemView) {
             super(itemView);
+
+            this.itemView = itemView;
 
             listItemImageView = (ImageView) itemView.findViewById(R.id.iv_item_poster);
             listItemImageView.setOnClickListener(this);
@@ -80,29 +78,41 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
                     new MaterialFavoriteButton.OnFavoriteChangeListener() {
                         @Override
                         public void onFavoriteChanged(MaterialFavoriteButton buttonView, boolean favorite) {
+                            long movieId = (long) buttonView.getTag();
                             if (favorite) {
-                                mListener.onListItemStar(mMovieArrayList.get(getAdapterPosition()));
+                                mListener.onListItemStar(movieId);
                             } else {
-                                mListener.onListItemUnstar(mMovieArrayList.get(getAdapterPosition()));
+                                mListener.onListItemUnstar(movieId);
                             }
                         }
                     });
         }
 
         void bind(int position) {
-            mMovie = mMovieArrayList.get(position);
+            /* Move cursor to my position */
+            if (!mCursor.move(position))
+                return;
+
+            /* Get needed info from database */
+            String poster_path = mCursor.getString(mCursor.getColumnIndex(MoviesEntry.COLUMN_NAME_POSTER));
+            long movieId = mCursor.getLong(mCursor.getColumnIndex(MoviesEntry._ID));
+
+            /* Update view */
+            itemView.setTag(movieId);
+            listItemFavoriteButton.setTag(movieId);
+
             Picasso.with(listItemImageView.getContext())
-                    .load(mMovie.getPosterURL(Movie.POSTER_SIZE_MOBILE))
+                    .load(MovieUtils.getPosterUrl(poster_path, MovieUtils.POSTER_SIZE_MOBILE))
                     .into(listItemImageView);
         }
 
         @Override
         public void onClick(View v) {
-            int clickedPosition = getAdapterPosition();
+            long movieId = (long) itemView.getTag();
 
             switch (v.getId()) {
                 case R.id.iv_item_poster:
-                    mListener.onListItemClick(mMovieArrayList.get(clickedPosition));
+                    mListener.onListItemClick(movieId);
                     break;
                 default:
                     break;
