@@ -10,7 +10,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity"
+        <activity android:name=".view.activities.MainActivity"
             android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -19,16 +19,16 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".MovieActivity"
-            android:parentActivityName=".MainActivity">
+            android:name=".view.activities.MovieActivity"
+            android:parentActivityName=".view.activities.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.android.popularmovies.MainActivity" />
+                android:value="com.example.android.popularmovies.view.activities.MainActivity" />
         </activity>
-        <activity android:name=".SettingsActivity">
+        <activity android:name=".view.activities.SettingsActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.android.popularmovies.MainActivity" />
+                android:value="com.example.android.popularmovies.view.activities.MainActivity" />
         </activity>
     </application>
 
