@@ -1,4 +1,4 @@
-package com.example.android.popularmovies;
+package com.example.android.popularmovies.view.adapters;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -8,7 +8,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.example.android.popularmovies.MoviesContract.MoviesEntry;
+import com.example.android.popularmovies.R;
+import com.example.android.popularmovies.data.MoviesContract.MoviesEntry;
+import com.example.android.popularmovies.model.MovieUtils;
 import com.github.ivbaranov.mfb.MaterialFavoriteButton;
 import com.squareup.picasso.Picasso;
 
