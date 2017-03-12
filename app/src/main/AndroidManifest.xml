@@ -14,7 +14,6 @@
             android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -30,6 +29,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.android.popularmovies.view.activities.MainActivity" />
         </activity>
+
+        <provider
+            android:authorities="com.example.android.popularmovies"
+            android:name="com.example.android.popularmovies.data.MoviesContentProvider"
+            android:exported="false" />
+
+        <service android:name=".sync.FetchMoviesIntentService"
+            android:exported="false" />
     </application>
 
 </manifest>
