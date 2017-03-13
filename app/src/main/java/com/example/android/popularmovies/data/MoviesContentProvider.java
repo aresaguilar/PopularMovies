@@ -51,6 +51,12 @@ public class MoviesContentProvider extends ContentProvider {
         return uriMatcher;
     }
 
+    public static String buildInnerJoin(String table1, String table2,
+                                        String table1Id, String table2Id) {
+        return table1 + " INNER JOIN " + table2 + " ON " +
+                table1 + "." + table1Id + "=" + table2 + "." + table2Id;
+    }
+
     @Override
     public boolean onCreate() {
         mMoviesDbHelper = new MoviesDbHelper(getContext());
@@ -60,14 +66,79 @@ public class MoviesContentProvider extends ContentProvider {
 
     @Nullable
     @Override
-    public Cursor query(@NonNull Uri uri, @Nullable String[] projection, @Nullable String selection, @Nullable String[] selectionArgs, @Nullable String sortOrder) {
-        return null;
+    public Cursor query(@NonNull Uri uri, @Nullable String[] projection, @Nullable String selection,
+                        @Nullable String[] selectionArgs, @Nullable String sortOrder) {
+        final SQLiteDatabase db = mMoviesDbHelper.getReadableDatabase();
+        int match = sUriMatcher.match(uri);
+        Cursor retCursor;
+
+        switch (match) {
+            case MOVIES:
+                retCursor = db.query(MoviesEntry.TABLE_NAME,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder);
+                break;
+            case POPULAR_MOVIES:
+                retCursor = db.query(
+                        buildInnerJoin(
+                                MoviesEntry.TABLE_NAME,
+                                PopularMoviesEntry.TABLE_NAME,
+                                MoviesEntry.COLUMN_NAME_MOVIE_ID,
+                                PopularMoviesEntry.COLUMN_NAME_MOVIE_ID),
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder);
+                break;
+            case TOP_RATED_MOVIES:
+                retCursor = db.query(
+                        buildInnerJoin(
+                                MoviesEntry.TABLE_NAME,
+                                TopRatedMoviesEntry.TABLE_NAME,
+                                MoviesEntry.COLUMN_NAME_MOVIE_ID,
+                                TopRatedMoviesEntry.COLUMN_NAME_MOVIE_ID),
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder);
+                break;
+            case FAVORITE_MOVIES:
+                retCursor = db.query(
+                        buildInnerJoin(
+                                MoviesEntry.TABLE_NAME,
+                                FavoriteMoviesEntry.TABLE_NAME,
+                                MoviesEntry.COLUMN_NAME_MOVIE_ID,
+                                FavoriteMoviesEntry.COLUMN_NAME_MOVIE_ID),
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder);
+                break;
+            case MOVIE_WITH_ID:
+            case MOVIE_REVIEWS_WITH_ID:
+            case MOVIE_VIDEOS_WITH_ID:
+            default:
+                throw new UnsupportedOperationException("Unknown uri " + uri);
+        }
+
+        retCursor.setNotificationUri(getContext().getContentResolver(), uri);
+        return retCursor;
     }
 
     @Nullable
     @Override
     public String getType(@NonNull Uri uri) {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     @Override
