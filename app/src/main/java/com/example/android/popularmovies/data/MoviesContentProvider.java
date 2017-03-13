@@ -32,6 +32,7 @@ public class MoviesContentProvider extends ContentProvider {
     private static final int POPULAR_MOVIES = 400;
     private static final int TOP_RATED_MOVIES = 500;
     private static final int FAVORITE_MOVIES = 600;
+    private static final int FAVORITE_MOVIE_WITH_ID = 601;
 
     private static final UriMatcher sUriMatcher = buildUriMatcher();
 
@@ -47,6 +48,7 @@ public class MoviesContentProvider extends ContentProvider {
         uriMatcher.addURI(MoviesContract.AUTHORITY, MoviesContract.PATH_POPULAR, POPULAR_MOVIES);
         uriMatcher.addURI(MoviesContract.AUTHORITY, MoviesContract.PATH_TOP_RATED, TOP_RATED_MOVIES);
         uriMatcher.addURI(MoviesContract.AUTHORITY, MoviesContract.PATH_FAVORITES, FAVORITE_MOVIES);
+        uriMatcher.addURI(MoviesContract.AUTHORITY, MoviesContract.PATH_FAVORITES + "/#", FAVORITE_MOVIE_WITH_ID);
 
         return uriMatcher;
     }
@@ -182,8 +184,108 @@ public class MoviesContentProvider extends ContentProvider {
 
     @Override
     public int bulkInsert(@NonNull Uri uri, @NonNull ContentValues[] values) {
-        // TODO Implement
-        return super.bulkInsert(uri, values);
+
+        final SQLiteDatabase db = mMoviesDbHelper.getWritableDatabase();
+
+        int match = sUriMatcher.match(uri);
+        int rowsInserted;
+
+        switch (match) {
+            case MOVIES:
+                db.beginTransaction();
+                rowsInserted = 0;
+                try {
+                    for (ContentValues value : values) {
+                        long _id = db.insertWithOnConflict(MoviesEntry.TABLE_NAME, null, value, SQLiteDatabase.CONFLICT_REPLACE);
+                        if (_id != -1) {
+                            rowsInserted++;
+                        }
+                    }
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+                break;
+            case POPULAR_MOVIES:
+                db.beginTransaction();
+                rowsInserted = 0;
+                try {
+                    for (ContentValues value : values) {
+                        long _id = db.insertWithOnConflict(MoviesEntry.TABLE_NAME, null, value, SQLiteDatabase.CONFLICT_REPLACE);
+                        if (_id != -1) {
+                            String movieId = value.getAsString(MoviesEntry.COLUMN_NAME_MOVIE_ID);
+                            ContentValues cv = new ContentValues();
+                            cv.put(PopularMoviesEntry.COLUMN_NAME_MOVIE_ID, movieId);
+                            if (db.insertWithOnConflict(PopularMoviesEntry.TABLE_NAME, null, cv, SQLiteDatabase.CONFLICT_REPLACE) != -1) {
+                                rowsInserted++;
+                            }
+                        }
+                    }
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+                break;
+            case TOP_RATED_MOVIES:
+                db.beginTransaction();
+                rowsInserted = 0;
+                try {
+                    for (ContentValues value : values) {
+                        long _id = db.insertWithOnConflict(MoviesEntry.TABLE_NAME, null, value, SQLiteDatabase.CONFLICT_REPLACE);
+                        if (_id != -1) {
+                            String movieId = value.getAsString(MoviesEntry.COLUMN_NAME_MOVIE_ID);
+                            ContentValues cv = new ContentValues();
+                            cv.put(TopRatedMoviesEntry.COLUMN_NAME_MOVIE_ID, movieId);
+                            if (db.insertWithOnConflict(TopRatedMoviesEntry.TABLE_NAME, null, cv, SQLiteDatabase.CONFLICT_REPLACE) != -1) {
+                                rowsInserted++;
+                            }
+                        }
+                    }
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+                break;
+            case MOVIE_REVIEWS:
+                db.beginTransaction();
+                rowsInserted = 0;
+                try {
+                    for (ContentValues value : values) {
+                        long _id = db.insertWithOnConflict(MovieReviewsEntry.TABLE_NAME, null, value, SQLiteDatabase.CONFLICT_REPLACE);
+                        if (_id != -1) {
+                            rowsInserted++;
+                        }
+                    }
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+                break;
+            case MOVIE_VIDEOS:
+                db.beginTransaction();
+                rowsInserted = 0;
+                try {
+                    for (ContentValues value : values) {
+                        long _id = db.insertWithOnConflict(MovieVideosEntry.TABLE_NAME, null, value, SQLiteDatabase.CONFLICT_REPLACE);
+                        if (_id != -1) {
+                            rowsInserted++;
+                        }
+                    }
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+                break;
+            case MOVIE_REVIEWS_WITH_ID:
+            case MOVIE_VIDEOS_WITH_ID:
+            default:
+                return super.bulkInsert(uri, values);
+        }
+
+        if (rowsInserted > 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+        return rowsInserted;
     }
 
     @Nullable
@@ -199,7 +301,7 @@ public class MoviesContentProvider extends ContentProvider {
 
         switch (match) {
             case MOVIES:
-                id = db.insert(MoviesEntry.TABLE_NAME, null, values);
+                id = db.insertWithOnConflict(MoviesEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
                 if (id > 0) {
                     returnUri = ContentUris.withAppendedId(MoviesEntry.CONTENT_URI, id);
                 } else {
@@ -207,7 +309,7 @@ public class MoviesContentProvider extends ContentProvider {
                 }
                 break;
             case MOVIE_REVIEWS:
-                id = db.insert(MovieReviewsEntry.TABLE_NAME, null, values);
+                id = db.insertWithOnConflict(MovieReviewsEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
                 if (id > 0) {
                     returnUri = ContentUris.withAppendedId(MovieReviewsEntry.CONTENT_URI, id);
                 } else {
@@ -215,7 +317,7 @@ public class MoviesContentProvider extends ContentProvider {
                 }
                 break;
             case MOVIE_VIDEOS:
-                id = db.insert(MovieVideosEntry.TABLE_NAME, null, values);
+                id = db.insertWithOnConflict(MovieVideosEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
                 if (id > 0) {
                     returnUri = ContentUris.withAppendedId(MovieVideosEntry.CONTENT_URI, id);
                 } else {
@@ -223,13 +325,13 @@ public class MoviesContentProvider extends ContentProvider {
                 }
                 break;
             case POPULAR_MOVIES:
-                id = db.insert(MoviesEntry.TABLE_NAME, null, values);
+                id = db.insertWithOnConflict(MoviesEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
                 if (id > 0) {
                     returnUri = ContentUris.withAppendedId(MoviesEntry.CONTENT_URI, id);
                     String movieId = values.getAsString(MoviesEntry.COLUMN_NAME_MOVIE_ID);
                     ContentValues cv = new ContentValues();
                     cv.put(PopularMoviesEntry.COLUMN_NAME_MOVIE_ID, movieId);
-                    if (db.insert(PopularMoviesEntry.TABLE_NAME, null, cv) <= 0) {
+                    if (db.insertWithOnConflict(PopularMoviesEntry.TABLE_NAME, null, cv, SQLiteDatabase.CONFLICT_REPLACE) <= 0) {
                         throw new SQLiteException("Failed to insert row into popular");
                     }
                 } else {
@@ -237,13 +339,13 @@ public class MoviesContentProvider extends ContentProvider {
                 }
                 break;
             case TOP_RATED_MOVIES:
-                id = db.insert(MoviesEntry.TABLE_NAME, null, values);
+                id = db.insertWithOnConflict(MoviesEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
                 if (id > 0) {
                     returnUri = ContentUris.withAppendedId(MoviesEntry.CONTENT_URI, id);
                     String movieId = values.getAsString(MoviesEntry.COLUMN_NAME_MOVIE_ID);
                     ContentValues cv = new ContentValues();
                     cv.put(TopRatedMoviesEntry.COLUMN_NAME_MOVIE_ID, movieId);
-                    if (db.insert(TopRatedMoviesEntry.TABLE_NAME, null, cv) <= 0) {
+                    if (db.insertWithOnConflict(TopRatedMoviesEntry.TABLE_NAME, null, cv, SQLiteDatabase.CONFLICT_REPLACE) <= 0) {
                         throw new SQLiteException("Failed to insert row into top rated");
                     }
                 } else {
@@ -251,28 +353,124 @@ public class MoviesContentProvider extends ContentProvider {
                 }
                 break;
             case FAVORITE_MOVIES:
-                id = db.insert(FavoriteMoviesEntry.TABLE_NAME, null, values);
+                id = db.insertWithOnConflict(FavoriteMoviesEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
                 if (id > 0) {
                     returnUri = ContentUris.withAppendedId(FavoriteMoviesEntry.CONTENT_URI, id);
                 } else {
                     throw new SQLiteException("Failed to insert row into " + uri);
                 }
                 break;
+            case FAVORITE_MOVIE_WITH_ID:
+                String movieId =  uri.getPathSegments().get(1);
+                ContentValues cv = new ContentValues();
+                cv.put(FavoriteMoviesEntry.COLUMN_NAME_MOVIE_ID, movieId);
+                id = db.insertWithOnConflict(FavoriteMoviesEntry.TABLE_NAME, null, cv, SQLiteDatabase.CONFLICT_REPLACE);
+                if (id <= 0) {
+                    throw new SQLiteException("Failed to insert row into Favorites");
+                }
+                returnUri = ContentUris.withAppendedId(FavoriteMoviesEntry.CONTENT_URI, id);
+                break;
             default:
                 throw new UnsupportedOperationException("Unknown Uri: " + uri);
         }
 
-        getContext().getContentResolver().notifyChange(uri, null);
+        getContext().getContentResolver().notifyChange(MoviesContract.BASE_CONTENT_URI, null);
         return returnUri;
     }
 
     @Override
     public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
-        return 0;
+        final SQLiteDatabase db = mMoviesDbHelper.getWritableDatabase();
+
+        int match = sUriMatcher.match(uri);
+        String id;
+        String mSelection;
+        String[] mSelectionArgs;
+        int numberOfItemsDeleted;
+
+        switch (match) {
+            case MOVIES:
+                numberOfItemsDeleted = db.delete(
+                        MoviesEntry.TABLE_NAME,
+                        null,
+                        null);
+                break;
+            case POPULAR_MOVIES:
+                numberOfItemsDeleted = db.delete(
+                        PopularMoviesEntry.TABLE_NAME,
+                        null,
+                        null);
+                break;
+            case TOP_RATED_MOVIES:
+                numberOfItemsDeleted = db.delete(
+                        TopRatedMoviesEntry.TABLE_NAME,
+                        null,
+                        null);
+                break;
+            case FAVORITE_MOVIES:
+                numberOfItemsDeleted = db.delete(
+                        FavoriteMoviesEntry.TABLE_NAME,
+                        null,
+                        null);
+                break;
+            case MOVIE_REVIEWS:
+                numberOfItemsDeleted = db.delete(
+                        MovieReviewsEntry.TABLE_NAME,
+                        null,
+                        null);
+                break;
+            case MOVIE_VIDEOS:
+                numberOfItemsDeleted = db.delete(
+                        MovieVideosEntry.TABLE_NAME,
+                        null,
+                        null);
+                break;
+            case MOVIE_WITH_ID:
+                id = uri.getPathSegments().get(1);
+                mSelection = MoviesEntry.COLUMN_NAME_MOVIE_ID + "=?";
+                mSelectionArgs = new String[]{id};
+                numberOfItemsDeleted = db.delete(
+                        MoviesEntry.TABLE_NAME,
+                        mSelection,
+                        mSelectionArgs);
+                break;
+            case MOVIE_REVIEWS_WITH_ID:
+                id = uri.getPathSegments().get(1);
+                mSelection = MovieReviewsEntry.COLUMN_NAME_MOVIE_ID + "=?";
+                mSelectionArgs = new String[]{id};
+                numberOfItemsDeleted = db.delete(
+                        MovieReviewsEntry.TABLE_NAME,
+                        mSelection,
+                        mSelectionArgs);
+                break;
+            case MOVIE_VIDEOS_WITH_ID:
+                id = uri.getPathSegments().get(1);
+                mSelection = MovieVideosEntry.COLUMN_NAME_MOVIE_ID + "=?";
+                mSelectionArgs = new String[]{id};
+                numberOfItemsDeleted = db.delete(
+                        MovieVideosEntry.TABLE_NAME,
+                        mSelection,
+                        mSelectionArgs);
+                break;
+            case FAVORITE_MOVIE_WITH_ID:
+                id = uri.getPathSegments().get(1);
+                mSelection = FavoriteMoviesEntry.COLUMN_NAME_MOVIE_ID + "=?";
+                mSelectionArgs = new String[]{id};
+                numberOfItemsDeleted = db.delete(
+                        FavoriteMoviesEntry.TABLE_NAME,
+                        mSelection,
+                        mSelectionArgs);
+                break;
+            default:
+                throw new UnsupportedOperationException("Unknown Uri: " + uri);
+        }
+        getContext().getContentResolver().notifyChange(uri, null);
+
+        return numberOfItemsDeleted;
     }
 
     @Override
     public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
-        return 0;
+        throw new UnsupportedOperationException("Update not implemented");
     }
 }

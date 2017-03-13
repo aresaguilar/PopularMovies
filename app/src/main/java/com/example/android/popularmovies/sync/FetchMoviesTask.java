@@ -54,5 +54,7 @@ public class FetchMoviesTask {
         } else if (ACTION_FETCH_TOP_RATED_MOVIES_TASK.equals(action)) {
             context.getContentResolver().bulkInsert(MoviesContract.TopRatedMoviesEntry.CONTENT_URI, contentValues);
         }
+
+        
     }
 }

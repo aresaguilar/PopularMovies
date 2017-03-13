@@ -23,7 +23,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
     private Cursor mCursor;
     private ListItemClickListener mListener;
 
-
     public MovieAdapter (Context context, ListItemClickListener listener) {
         this.mContext = context;
         this.mListener = listener;
@@ -83,8 +82,10 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
                             String movieId = (String) buttonView.getTag();
                             if (favorite) {
                                 mListener.onListItemStar(movieId);
+                                Log.d(TAG, "Added to favorites " + movieId);
                             } else {
                                 mListener.onListItemUnstar(movieId);
+                                Log.d(TAG, "Removed from favorites " + movieId);
                             }
                         }
                     });
@@ -92,7 +93,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
 
         void bind(int position) {
             /* Move cursor to my position */
-            if (!mCursor.move(position)) {
+            if (!mCursor.moveToPosition(position)) {
                 Log.e(TAG, "Error moving cursor to position " + position);
                 return;
             }

@@ -33,7 +33,6 @@ public class MainActivity extends AppCompatActivity
 
     /* Static IDs */
     private static final int MOVIES_LOADER_ID = 66;
-    private static final String MOVIES_QUERY_URL_EXTRA = "url";
     public static final String MOVIE_EXTRA = "movie";
 
     /* View related variables */
@@ -134,8 +133,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onListItemStar(String id) {
-        // TODO Implement
-
         if (mToast != null) {
             mToast.cancel();
         }
@@ -143,12 +140,13 @@ public class MainActivity extends AppCompatActivity
                 id +" "+ getString(R.string.added_to_favorites_action),
                 Toast.LENGTH_LONG);
         mToast.show();
+
+        Uri uri = MoviesContract.FavoriteMoviesEntry.CONTENT_URI.buildUpon().appendPath(id).build();
+        getContentResolver().insert(uri, null);
     }
 
     @Override
     public void onListItemUnstar(String id) {
-        // TODO Implement
-
         if (mToast != null) {
             mToast.cancel();
         }
@@ -156,6 +154,9 @@ public class MainActivity extends AppCompatActivity
                 id +" "+ getString(R.string.removed_from_favorites_action),
                 Toast.LENGTH_LONG);
         mToast.show();
+
+        Uri uri = MoviesContract.FavoriteMoviesEntry.CONTENT_URI.buildUpon().appendPath(id).build();
+        getContentResolver().delete(uri, null, null);
     }
 
     @Override
@@ -170,9 +171,9 @@ public class MainActivity extends AppCompatActivity
         switch (id) {
             case MOVIES_LOADER_ID:
                 Uri moviesQueryUri;
-                if (sort_option.equals(getString(R.string.pref_sort_label_popular)))
+                if (sort_option.equals(getString(R.string.pref_sort_popular_value)))
                     moviesQueryUri = MoviesContract.PopularMoviesEntry.CONTENT_URI;
-                else if (sort_option.equals(getString(R.string.pref_sort_label_top)))
+                else if (sort_option.equals(getString(R.string.pref_sort_top_value)))
                     moviesQueryUri = MoviesContract.TopRatedMoviesEntry.CONTENT_URI;
                 else if (sort_option.equals(getString(R.string.pref_sort_favorites_value)))
                     moviesQueryUri = MoviesContract.FavoriteMoviesEntry.CONTENT_URI;
@@ -192,19 +193,24 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mAdapter.swapCursor(data);
-        if (mPosition == RecyclerView.NO_POSITION) mPosition = 0;
-        mMoviesList.smoothScrollToPosition(mPosition);
+        //if (mPosition == RecyclerView.NO_POSITION) mPosition = 0;
+        //mMoviesList.smoothScrollToPosition(mPosition);
         if (data.getCount() != 0) showRecyclerView();
     }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        startMoviesIntent();
-        getSupportLoaderManager().initLoader(MOVIES_LOADER_ID, null, this);
+        if (key.equals(getString(R.string.pref_sort_key))) {
+            sort_option = sharedPreferences.getString(key, getString(R.string.pref_sort_popular_value));
+            startMoviesIntent();
+            getSupportLoaderManager().restartLoader(MOVIES_LOADER_ID, null, MainActivity.this);
+            mMoviesList.smoothScrollToPosition(0);
+        }
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
+        Log.d(TAG, "Loader reset");
         mAdapter.swapCursor(null);
     }
 }
