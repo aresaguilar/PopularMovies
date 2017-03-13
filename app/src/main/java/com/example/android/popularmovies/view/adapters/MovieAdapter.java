@@ -10,9 +10,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.example.android.popularmovies.R;
+import com.example.android.popularmovies.data.MoviesContract;
 import com.example.android.popularmovies.data.MoviesContract.MoviesEntry;
 import com.example.android.popularmovies.model.MovieUtils;
-import com.github.ivbaranov.mfb.MaterialFavoriteButton;
+import com.like.LikeButton;
+import com.like.OnLikeListener;
 import com.squareup.picasso.Picasso;
 
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHolder> {
@@ -64,7 +66,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
 
         View itemView;
         ImageView listItemImageView;
-        MaterialFavoriteButton listItemFavoriteButton;
+        LikeButton listItemFavoriteButton;
 
         public MovieViewHolder(View itemView) {
             super(itemView);
@@ -74,19 +76,19 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
             listItemImageView = (ImageView) itemView.findViewById(R.id.iv_item_poster);
             listItemImageView.setOnClickListener(this);
 
-            listItemFavoriteButton = (MaterialFavoriteButton) itemView.findViewById(R.id.btn_item_star);
-            listItemFavoriteButton.setOnFavoriteChangeListener(
-                    new MaterialFavoriteButton.OnFavoriteChangeListener() {
+            listItemFavoriteButton = (LikeButton) itemView.findViewById(R.id.btn_item_star);
+            listItemFavoriteButton.setOnLikeListener(
+                    new OnLikeListener() {
                         @Override
-                        public void onFavoriteChanged(MaterialFavoriteButton buttonView, boolean favorite) {
-                            String movieId = (String) buttonView.getTag();
-                            if (favorite) {
-                                mListener.onListItemStar(movieId);
-                                Log.d(TAG, "Added to favorites " + movieId);
-                            } else {
-                                mListener.onListItemUnstar(movieId);
-                                Log.d(TAG, "Removed from favorites " + movieId);
-                            }
+                        public void liked(LikeButton likeButton) {
+                            String movieId = (String) likeButton.getTag();
+                            mListener.onListItemStar(movieId);
+                        }
+
+                        @Override
+                        public void unLiked(LikeButton likeButton) {
+                            String movieId = (String) likeButton.getTag();
+                            mListener.onListItemUnstar(movieId);
                         }
                     });
         }
@@ -105,6 +107,16 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
             /* Update view */
             itemView.setTag(movieId);
             listItemFavoriteButton.setTag(movieId);
+
+            Cursor cursor = mContext.getContentResolver().query(
+                    MoviesContract.FavoriteMoviesEntry.CONTENT_URI.buildUpon().appendPath(movieId).build(),
+                    null, null, null, null);
+
+            if (cursor.getCount() > 0) {
+                listItemFavoriteButton.setLiked(true);
+            } else {
+                listItemFavoriteButton.setLiked(false);
+            }
 
             Picasso.with(listItemImageView.getContext())
                     .load(MovieUtils.getPosterUrl(poster_path, MovieUtils.POSTER_SIZE_MOBILE))
