@@ -71,6 +71,9 @@ public class MoviesContentProvider extends ContentProvider {
         final SQLiteDatabase db = mMoviesDbHelper.getReadableDatabase();
         int match = sUriMatcher.match(uri);
         Cursor retCursor;
+        String id;
+        String mSelection;
+        String[] mSelectionArgs;
 
         switch (match) {
             case MOVIES:
@@ -125,8 +128,44 @@ public class MoviesContentProvider extends ContentProvider {
                         sortOrder);
                 break;
             case MOVIE_WITH_ID:
+                id = uri.getPathSegments().get(1);
+                mSelection = MoviesEntry.COLUMN_NAME_MOVIE_ID + "=?";
+                mSelectionArgs = new String[]{id};
+
+                retCursor = db.query(MoviesEntry.TABLE_NAME,
+                        projection,
+                        mSelection,
+                        mSelectionArgs,
+                        null,
+                        null,
+                        sortOrder);
+                break;
             case MOVIE_REVIEWS_WITH_ID:
+                id = uri.getPathSegments().get(1);
+                mSelection = MovieReviewsEntry.COLUMN_NAME_MOVIE_ID + "=?";
+                mSelectionArgs = new String[]{id};
+
+                retCursor = db.query(MovieReviewsEntry.TABLE_NAME,
+                        projection,
+                        mSelection,
+                        mSelectionArgs,
+                        null,
+                        null,
+                        sortOrder);
+                break;
             case MOVIE_VIDEOS_WITH_ID:
+                id = uri.getPathSegments().get(1);
+                mSelection = MovieVideosEntry.COLUMN_NAME_MOVIE_ID + "=?";
+                mSelectionArgs = new String[]{id};
+
+                retCursor = db.query(MovieVideosEntry.TABLE_NAME,
+                        projection,
+                        mSelection,
+                        mSelectionArgs,
+                        null,
+                        null,
+                        sortOrder);
+                break;
             default:
                 throw new UnsupportedOperationException("Unknown uri " + uri);
         }
