@@ -3,6 +3,7 @@ package com.example.android.popularmovies.view.adapters;
 import android.content.Context;
 import android.database.Cursor;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,31 +19,29 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
 
     private static final String TAG = MovieAdapter.class.getSimpleName();
 
+    private Context mContext;
     private Cursor mCursor;
     private ListItemClickListener mListener;
 
 
-    public MovieAdapter (Cursor cursor, ListItemClickListener listener) {
-        this.mCursor = cursor;
+    public MovieAdapter (Context context, ListItemClickListener listener) {
+        this.mContext = context;
         this.mListener = listener;
     }
 
     public interface ListItemClickListener {
-        void onListItemClick(long id);
-        void onListItemStar(long id);
-        void onListItemUnstar(long id);
+        void onListItemClick(String id);
+        void onListItemStar(String id);
+        void onListItemUnstar(String id);
     }
 
     @Override
     public MovieViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        Context context = parent.getContext();
-        int layoutIdForListItem = R.layout.film_list_item;
-        LayoutInflater inflater = LayoutInflater.from(context);
+        View view = LayoutInflater
+                .from(mContext)
+                .inflate(R.layout.film_list_item, parent, false);
 
-        View view = inflater.inflate(layoutIdForListItem, parent, false);
-        MovieViewHolder viewHolder = new MovieViewHolder(view);
-
-        return viewHolder;
+        return new MovieViewHolder(view);
     }
 
     @Override
@@ -52,12 +51,13 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
 
     @Override
     public int getItemCount() {
+        if (null == mCursor)
+            return 0;
         return mCursor.getCount();
     }
 
-    public void changeCursor(Cursor cursor) {
-        mCursor.close();
-        mCursor = cursor;
+    public void swapCursor(Cursor newCursor) {
+        mCursor = newCursor;
         notifyDataSetChanged();
     }
 
@@ -80,7 +80,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
                     new MaterialFavoriteButton.OnFavoriteChangeListener() {
                         @Override
                         public void onFavoriteChanged(MaterialFavoriteButton buttonView, boolean favorite) {
-                            long movieId = (long) buttonView.getTag();
+                            String movieId = (String) buttonView.getTag();
                             if (favorite) {
                                 mListener.onListItemStar(movieId);
                             } else {
@@ -92,12 +92,14 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
 
         void bind(int position) {
             /* Move cursor to my position */
-            if (!mCursor.move(position))
+            if (!mCursor.move(position)) {
+                Log.e(TAG, "Error moving cursor to position " + position);
                 return;
+            }
 
             /* Get needed info from database */
             String poster_path = mCursor.getString(mCursor.getColumnIndex(MoviesEntry.COLUMN_NAME_POSTER));
-            long movieId = mCursor.getLong(mCursor.getColumnIndex(MoviesEntry._ID));
+            String movieId = mCursor.getString(mCursor.getColumnIndex(MoviesEntry.COLUMN_NAME_MOVIE_ID));
 
             /* Update view */
             itemView.setTag(movieId);
@@ -110,7 +112,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
 
         @Override
         public void onClick(View v) {
-            long movieId = (long) itemView.getTag();
+            String movieId = (String) itemView.getTag();
 
             switch (v.getId()) {
                 case R.id.iv_item_poster:

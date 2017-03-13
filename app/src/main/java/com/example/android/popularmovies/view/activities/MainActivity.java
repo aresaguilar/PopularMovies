@@ -1,12 +1,13 @@
 package com.example.android.popularmovies.view.activities;
 
-import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -16,41 +17,31 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.android.popularmovies.BuildConfig;
 import com.example.android.popularmovies.R;
-import com.example.android.popularmovies.data.MoviesContract.MoviesEntry;
-import com.example.android.popularmovies.data.MoviesDbHelper;
-import com.example.android.popularmovies.model.NetworkUtils;
+import com.example.android.popularmovies.data.MoviesContract;
 import com.example.android.popularmovies.sync.FetchMoviesIntentService;
 import com.example.android.popularmovies.sync.FetchMoviesTask;
 import com.example.android.popularmovies.view.adapters.MovieAdapter;
 
-import java.net.URL;
-
 public class MainActivity extends AppCompatActivity
         implements MovieAdapter.ListItemClickListener,
-            SharedPreferences.OnSharedPreferenceChangeListener {
+            LoaderManager.LoaderCallbacks<Cursor>, SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
     /* Static IDs */
-    private static final int POPULAR_MOVIES_LOADER_ID = 66;
-    private static final int TOP_RATED_MOVIES_LOADER_ID = 77;
+    private static final int MOVIES_LOADER_ID = 66;
     private static final String MOVIES_QUERY_URL_EXTRA = "url";
     public static final String MOVIE_EXTRA = "movie";
 
     /* View related variables */
     private RecyclerView mMoviesList;
+    private int mPosition = RecyclerView.NO_POSITION;
     private MovieAdapter mAdapter;
-    private TextView mErrorTextView;
     private ProgressBar mLoadingProgressBar;
     private Toast mToast;
-
-    /* Data */
-    private SQLiteDatabase mDb;
 
     /* Preferences */
     private String sort_option;
@@ -62,7 +53,6 @@ public class MainActivity extends AppCompatActivity
 
         /* Get references to layout elements */
         mMoviesList = (RecyclerView) findViewById(R.id.rv_movies);
-        mErrorTextView = (TextView) findViewById(R.id.tv_error_message_display);
         mLoadingProgressBar = (ProgressBar) findViewById(R.id.pb_loading_indicator);
 
         /* Create a layout manager using spanCount = 2 */
@@ -70,22 +60,17 @@ public class MainActivity extends AppCompatActivity
         mMoviesList.setLayoutManager(gridLayoutManager);
         mMoviesList.setHasFixedSize(true);
 
-        /* Setup Shared Preferences */
+        /* Load movies from database */
+        mAdapter = new MovieAdapter(this, this);
+        mMoviesList.setAdapter(mAdapter);
+
         setupSharedPreferences();
 
-        /* Get the database */
-        MoviesDbHelper dbHelper = new MoviesDbHelper(this);
-        mDb = dbHelper.getWritableDatabase();
+        showLoading();
 
-        /* Load movies from database */
-        Cursor cursor = getAllMovies();
-        if (cursor.getCount() > 0) {
-            createOrUpdateAdapter(cursor);
-        } else {
-            mLoadingProgressBar.setVisibility(View.VISIBLE);
-        }
+        startMoviesIntent();
 
-        makeMoviesQuery();
+        getSupportLoaderManager().initLoader(MOVIES_LOADER_ID, null, this);
     }
 
     private void setupSharedPreferences() {
@@ -98,48 +83,6 @@ public class MainActivity extends AppCompatActivity
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
-    private Cursor getAllMovies() {
-        if (sort_option.equals(getString(R.string.pref_sort_popular_value))) {
-            return getAllPopularMovies();
-        } else if (sort_option.equals(getString(R.string.pref_sort_top_value))) {
-            return getAllTopRatedMovies();
-        } else if (sort_option.equals(getString(R.string.pref_sort_favorites_value))) {
-            return getAllFavoriteMovies();
-        }
-        return null;
-    }
-
-    private Cursor getAllFavoriteMovies() {
-        return mDb.query(MoviesEntry.TABLE_NAME,
-                null,
-                MoviesEntry.COLUMN_NAME_FAVORITE + " = 1",
-                null,
-                null,
-                null,
-                null);
-    }
-
-    private Cursor getAllPopularMovies() {
-        return mDb.query(MoviesEntry.TABLE_NAME,
-                null,
-                MoviesEntry.COLUMN_NAME_POPULAR + " = 1",
-                null,
-                null,
-                null,
-                null);
-    }
-
-    private Cursor getAllTopRatedMovies() {
-        return mDb.query(MoviesEntry.TABLE_NAME,
-                null,
-                MoviesEntry.COLUMN_NAME_TOP_RATED + " = 1",
-                null,
-                null,
-                null,
-                null);
-    }
-
-    // TODO Cambiar moviesQuery por moviesIntent
     private void startMoviesIntent() {
         Intent fetchMoviesIntent = new Intent(this, FetchMoviesIntentService.class);
 
@@ -152,22 +95,6 @@ public class MainActivity extends AppCompatActivity
         }
 
         startService(fetchMoviesIntent);
-    }
-
-    private void makeMoviesQuery() {
-        URL mTopRatedMoviesUrl = null;
-        URL mPopularMoviesUrl = null;
-
-        mPopularMoviesUrl = NetworkUtils.buildUrl(NetworkUtils.POPULAR_EP, BuildConfig.THEMOVIEDB_API_KEY);
-        mTopRatedMoviesUrl = NetworkUtils.buildUrl(NetworkUtils.TOPRATED_EP, BuildConfig.THEMOVIEDB_API_KEY);
-
-        Bundle popularMoviesBundle = new Bundle();
-        popularMoviesBundle.putString(MOVIES_QUERY_URL_EXTRA, String.valueOf(mPopularMoviesUrl));
-        Bundle topRatedMoviesBundle = new Bundle();
-        topRatedMoviesBundle.putString(MOVIES_QUERY_URL_EXTRA, String.valueOf(mTopRatedMoviesUrl));
-
-        getSupportLoaderManager().restartLoader(POPULAR_MOVIES_LOADER_ID, popularMoviesBundle, this);
-        getSupportLoaderManager().restartLoader(TOP_RATED_MOVIES_LOADER_ID, topRatedMoviesBundle, this);
     }
 
     @Override
@@ -188,17 +115,17 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void showRecyclerView() {
-        this.mErrorTextView.setVisibility(View.INVISIBLE);
+        this.mLoadingProgressBar.setVisibility(View.INVISIBLE);
         this.mMoviesList.setVisibility(View.VISIBLE);
     }
 
-    private void showErrorTextView() {
-        this.mErrorTextView.setVisibility(View.VISIBLE);
+    private void showLoading() {
+        this.mLoadingProgressBar.setVisibility(View.VISIBLE);
         this.mMoviesList.setVisibility(View.INVISIBLE);
     }
 
     @Override
-    public void onListItemClick(long id) {
+    public void onListItemClick(String id) {
         Intent intent = new Intent(MainActivity.this, MovieActivity.class);
         intent.putExtra(MOVIE_EXTRA, id);
         Log.d(TAG, "Launching activity with movie " + id);
@@ -206,10 +133,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onListItemStar(long id) {
-        ContentValues cv = new ContentValues();
-        cv.put(MoviesEntry.COLUMN_NAME_FAVORITE, 1);
-        mDb.update(MoviesEntry.TABLE_NAME, cv, MoviesEntry._ID + " = " + id, null);
+    public void onListItemStar(String id) {
+        // TODO Implement
 
         if (mToast != null) {
             mToast.cancel();
@@ -221,10 +146,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onListItemUnstar(long id) {
-        ContentValues cv = new ContentValues();
-        cv.put(MoviesEntry.COLUMN_NAME_FAVORITE, 0);
-        mDb.update(MoviesEntry.TABLE_NAME, cv, MoviesEntry._ID + " = " + id, null);
+    public void onListItemUnstar(String id) {
+        // TODO Implement
 
         if (mToast != null) {
             mToast.cancel();
@@ -236,32 +159,52 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (key.equals(getString(R.string.pref_sort_key))) {
-            sort_option = sharedPreferences.getString(key, getString(R.string.pref_sort_popular_value));
-            createOrUpdateAdapter(getAllMovies());
-        }
-    }
-
-    @Override
     protected void onDestroy() {
         super.onDestroy();
         PreferenceManager.getDefaultSharedPreferences(this)
                 .unregisterOnSharedPreferenceChangeListener(this);
     }
 
-    public void createOrUpdateAdapter(Cursor cursor) {
-        if (mAdapter == null) {
-            mAdapter = new MovieAdapter(cursor, MainActivity.this);
-            mMoviesList.setAdapter(mAdapter);
-        } else {
-            mAdapter.changeCursor(cursor);
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        switch (id) {
+            case MOVIES_LOADER_ID:
+                Uri moviesQueryUri;
+                if (sort_option.equals(getString(R.string.pref_sort_label_popular)))
+                    moviesQueryUri = MoviesContract.PopularMoviesEntry.CONTENT_URI;
+                else if (sort_option.equals(getString(R.string.pref_sort_label_top)))
+                    moviesQueryUri = MoviesContract.TopRatedMoviesEntry.CONTENT_URI;
+                else if (sort_option.equals(getString(R.string.pref_sort_favorites_value)))
+                    moviesQueryUri = MoviesContract.FavoriteMoviesEntry.CONTENT_URI;
+                else
+                    throw new RuntimeException("Loader Not Implemented for Preference: " + sort_option);
+                return new CursorLoader(this,
+                        moviesQueryUri,
+                        null,
+                        null,
+                        null,
+                        null);
+            default:
+                throw new RuntimeException("Loader Not Implemented: " + id);
         }
-        showRecyclerView();
     }
 
     @Override
-    public void onLoaderReset(Loader<String> loader) {
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mAdapter.swapCursor(data);
+        if (mPosition == RecyclerView.NO_POSITION) mPosition = 0;
+        mMoviesList.smoothScrollToPosition(mPosition);
+        if (data.getCount() != 0) showRecyclerView();
+    }
 
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        startMoviesIntent();
+        getSupportLoaderManager().initLoader(MOVIES_LOADER_ID, null, this);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mAdapter.swapCursor(null);
     }
 }

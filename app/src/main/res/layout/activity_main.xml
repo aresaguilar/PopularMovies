@@ -11,15 +11,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
-    <TextView
-        android:id="@+id/tv_error_message_display"
-        android:textSize="22sp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:text="@string/error_message"
-        android:visibility="invisible" />
-
     <ProgressBar
         android:id="@+id/pb_loading_indicator"
         android:layout_height="42dp"

@@ -144,12 +144,6 @@ public class MoviesContentProvider extends ContentProvider {
                 id = db.insert(FavoriteMoviesEntry.TABLE_NAME, null, values);
                 if (id > 0) {
                     returnUri = ContentUris.withAppendedId(FavoriteMoviesEntry.CONTENT_URI, id);
-                    String movieId = values.getAsString(MoviesEntry.COLUMN_NAME_MOVIE_ID);
-                    ContentValues cv = new ContentValues();
-                    cv.put(FavoriteMoviesEntry.COLUMN_NAME_MOVIE_ID, movieId);
-                    if (db.insert(FavoriteMoviesEntry.TABLE_NAME, null, cv) <= 0) {
-                        throw new SQLiteException("Failed to insert row into favorites");
-                    }
                 } else {
                     throw new SQLiteException("Failed to insert row into " + uri);
                 }
