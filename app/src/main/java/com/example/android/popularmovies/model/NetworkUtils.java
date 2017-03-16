@@ -19,6 +19,8 @@ public class NetworkUtils {
 
     public static final String POPULAR_EP = "popular/";
     public static final String TOPRATED_EP = "top_rated/";
+    public static final String VIDEOS_EP = "/videos";
+    public static final String REVIEWS_EP = "/reviews";
 
     private static final String API_PARAM = "api_key";
 

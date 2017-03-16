@@ -19,7 +19,7 @@ public class MovieUtils {
     private static final String POSTER_BASE_URL = "http://image.tmdb.org/t/p/";
     public static final String POSTER_SIZE_MOBILE = "w185";
 
-    public static ArrayList<Movie> parseMoviesJSON(String jsonData) {
+    public static List<Movie> parseMoviesJSON(String jsonData) {
         ArrayList<Movie> movieArrayList = new ArrayList<>();
 
         try {
@@ -45,10 +45,57 @@ public class MovieUtils {
             Log.d(TAG, "Parsed " + resultsArray.length() + " results");
         } catch (JSONException e) {
             e.printStackTrace();
-            Log.e(TAG, "JSON Error");
+            Log.e(TAG, "JSON Error: " + jsonData);
         }
 
         return movieArrayList;
+    }
+
+    public static List<Movie.MovieReview> parseReviewsJSON (String jsonData) {
+        ArrayList<Movie.MovieReview> movieReviewArrayList = new ArrayList<>();
+
+        try {
+            JSONObject mainObject = new JSONObject(jsonData);
+
+            JSONArray resultsArray = mainObject.getJSONArray("results");
+            Movie m = new Movie();
+            for (int i = 0; i < resultsArray.length(); i++) {
+                JSONObject indexObject = resultsArray.getJSONObject(i);
+                Movie.MovieReview indexMovieReview = m.new MovieReview(
+                        indexObject.getString("author"),
+                        indexObject.getString("content"));
+                movieReviewArrayList.add(indexMovieReview);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Log.e(TAG, "JSON Error: " + jsonData);
+        }
+
+        return movieReviewArrayList;
+    }
+
+    public static List<Movie.MovieVideo> parseVideosJSON (String jsonData) {
+        ArrayList<Movie.MovieVideo> movieVideoArrayList = new ArrayList<>();
+
+        try {
+            JSONObject mainObject = new JSONObject(jsonData);
+
+            JSONArray resultsArray = mainObject.getJSONArray("results");
+            Movie m = new Movie();
+            for (int i = 0; i < resultsArray.length(); i++) {
+                JSONObject indexObject = resultsArray.getJSONObject(i);
+                Movie.MovieVideo indexMovieReview = m.new MovieVideo(
+                        indexObject.getString("site"),
+                        indexObject.getString("key"),
+                        indexObject.getString("type"));
+                movieVideoArrayList.add(indexMovieReview);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Log.e(TAG, "JSON Error: " + jsonData);
+        }
+
+        return movieVideoArrayList;
     }
 
     public static String getPosterUrl(String poster_path, String size) {
@@ -68,12 +115,61 @@ public class MovieUtils {
         return cv;
     }
 
+    public static ContentValues movieReviewToCv(String movieId, Movie.MovieReview review) {
+        ContentValues cv = new ContentValues();
+
+        cv.put(MoviesContract.MovieReviewsEntry.COLUMN_NAME_MOVIE_ID, movieId);
+        cv.put(MoviesContract.MovieReviewsEntry.COLUMN_NAME_AUTHOR, review.getAuthor());
+        cv.put(MoviesContract.MovieReviewsEntry.COLUMN_NAME_CONTENT, review.getReview());
+
+        return cv;
+    }
+
+    public static  ContentValues movieVideoToCv(String movieId, Movie.MovieVideo video) {
+        ContentValues cv = new ContentValues();
+
+        cv.put(MoviesContract.MovieVideosEntry.COLUMN_NAME_MOVIE_ID, movieId);
+        cv.put(MoviesContract.MovieVideosEntry.COLUMN_NAME_KEY, video.getKey());
+        cv.put(MoviesContract.MovieVideosEntry.COLUMN_NAME_SITE, video.getSite());
+        cv.put(MoviesContract.MovieVideosEntry.COLUMN_NAME_TYPE, video.getType());
+
+        return cv;
+    }
+
     public static ContentValues[] movieListToCvArray(List<Movie> movieList) {
         ContentValues[] cvArray;
         List<ContentValues> cvList = new ArrayList<>();
 
         for (Movie movie : movieList) {
             ContentValues cv = movieToCv(movie);
+            cvList.add(cv);
+        }
+
+        cvArray = new ContentValues[cvList.size()];
+        cvList.toArray(cvArray);
+        return cvArray;
+    }
+
+    public static ContentValues[] movieReviewListToCvArray(String movieId, List<Movie.MovieReview> movieReviewList) {
+        ContentValues[] cvArray;
+        List<ContentValues> cvList = new ArrayList<>();
+
+        for (Movie.MovieReview review : movieReviewList) {
+            ContentValues cv = movieReviewToCv(movieId, review);
+            cvList.add(cv);
+        }
+
+        cvArray = new ContentValues[cvList.size()];
+        cvList.toArray(cvArray);
+        return cvArray;
+    }
+
+    public static ContentValues[] movieVideoListToCvArray(String movieId, List<Movie.MovieVideo> movieVideoList) {
+        ContentValues[] cvArray;
+        List<ContentValues> cvList = new ArrayList<>();
+
+        for (Movie.MovieVideo video : movieVideoList) {
+            ContentValues cv = movieVideoToCv(movieId, video);
             cvList.add(cv);
         }
 

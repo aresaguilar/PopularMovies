@@ -37,6 +37,9 @@
 
         <service android:name=".sync.FetchMoviesIntentService"
             android:exported="false" />
+
+        <service android:name=".sync.FetchMovieDetailsIntentService"
+            android:exported="false" />
     </application>
 
 </manifest>

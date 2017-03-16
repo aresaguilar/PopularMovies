@@ -23,6 +23,48 @@ public class Movie implements Parcelable {
     private  int vote_average;
     private int vote_count;
 
+    public class MovieReview {
+        private String mAuthor;
+        private String mReview;
+
+        public MovieReview(String author, String review) {
+            mAuthor = author;
+            mReview = review;
+        }
+
+        public String getAuthor() {
+            return mAuthor;
+        }
+
+        public String getReview() {
+            return mReview;
+        }
+    }
+
+    public class MovieVideo {
+        private String mSite;
+        private String mKey;
+        private String mType;
+
+        public MovieVideo(String mSite, String mKey, String mType) {
+            this.mSite = mSite;
+            this.mKey = mKey;
+            this.mType = mType;
+        }
+
+        public String getSite() {
+            return mSite;
+        }
+
+        public String getKey() {
+            return mKey;
+        }
+
+        public String getType() {
+            return mType;
+        }
+    }
+
     public int getVote_count() {
         return vote_count;
     }
@@ -63,6 +105,7 @@ public class Movie implements Parcelable {
         return vote_average;
     }
 
+    public Movie () {}
 
     public Movie (Parcel in) {
         this.id = in.readInt();
@@ -90,10 +133,6 @@ public class Movie implements Parcelable {
         this.popularity = popularity;
         this.vote_average = vote_average;
         this.vote_count = vote_count;
-    }
-
-    public String getPosterURL(String size) {
-        return POSTER_BASE_URL + size + this.poster_path;
     }
 
     @Override
