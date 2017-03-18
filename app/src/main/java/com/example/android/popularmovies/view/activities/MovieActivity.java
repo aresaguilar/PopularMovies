@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -36,15 +37,17 @@ import java.util.WeakHashMap;
 
 
 public class MovieActivity extends AppCompatActivity
-        implements LoaderManager.LoaderCallbacks<Cursor> {
+        implements LoaderManager.LoaderCallbacks<Cursor>, View.OnClickListener {
 
     private static final String TAG = MovieActivity.class.getSimpleName();
 
     private static final int MOVIE_DETAILS_LOADER_ID = 77;
+    private static final int MOVIE_FAVORITES_LOADER_ID = 78;
     private static final int MOVIE_REVIEWS_LOADER_ID = 88;
     private static final int MOVIE_VIDEOS_LOADER_ID = 99;
 
     private String movieId;
+    private boolean isFavorite;
 
     TextView mTitleTextView;
     TextView mDateTextView;
@@ -53,6 +56,7 @@ public class MovieActivity extends AppCompatActivity
     ImageView mPosterImageView;
     ListView mReviewsListView;
     ListView mVideosListView;
+    Button mFavoriteButton;
 
     SimpleCursorAdapter mReviewsAdapter;
     SimpleCursorAdapter mVideosAdapter;
@@ -77,6 +81,9 @@ public class MovieActivity extends AppCompatActivity
         mPosterImageView = (ImageView) findViewById(R.id.iv_poster);
         mReviewsListView = (ListView) findViewById(R.id.lv_reviews);
         mVideosListView = (ListView) findViewById(R.id.lv_videos);
+        mFavoriteButton = (Button) findViewById(R.id.btn_favorite);
+
+        mFavoriteButton.setOnClickListener(this);
 
         /* Set up ListViews */
         mReviewsListView.setClickable(false);
@@ -126,6 +133,7 @@ public class MovieActivity extends AppCompatActivity
             startMovieDetailsIntent(movieId);
 
             getSupportLoaderManager().initLoader(MOVIE_DETAILS_LOADER_ID, null, this);
+            getSupportLoaderManager().initLoader(MOVIE_FAVORITES_LOADER_ID, null, this);
             getSupportLoaderManager().initLoader(MOVIE_REVIEWS_LOADER_ID, null, this);
             getSupportLoaderManager().initLoader(MOVIE_VIDEOS_LOADER_ID, null, this);
 
@@ -148,6 +156,10 @@ public class MovieActivity extends AppCompatActivity
                 movieDetailsUri =
                         MoviesContract.MoviesEntry.CONTENT_URI.buildUpon().appendPath(movieId).build();
                 break;
+            case MOVIE_FAVORITES_LOADER_ID:
+                movieDetailsUri =
+                        MoviesContract.FavoriteMoviesEntry.CONTENT_URI.buildUpon().appendPath(movieId).build();
+                break;
             case MOVIE_REVIEWS_LOADER_ID:
                 movieDetailsUri =
                         MoviesContract.MovieReviewsEntry.CONTENT_URI.buildUpon().appendPath(movieId).build();
@@ -168,6 +180,11 @@ public class MovieActivity extends AppCompatActivity
             switch (loader.getId()) {
                 case MOVIE_REVIEWS_LOADER_ID:
                     progressBarReviews.setVisibility(View.GONE);
+                    return;
+                case MOVIE_FAVORITES_LOADER_ID:
+                    isFavorite = false;
+                    mFavoriteButton.setText(getString(R.string.btn_favorite_add));
+                    mFavoriteButton.setVisibility(View.VISIBLE);
                     return;
                 case MOVIE_VIDEOS_LOADER_ID:
                     progressBarVideos.setVisibility(View.GONE);
@@ -216,6 +233,11 @@ public class MovieActivity extends AppCompatActivity
                             }
                         });
                 break;
+            case MOVIE_FAVORITES_LOADER_ID:
+                isFavorite = true;
+                mFavoriteButton.setText(getString(R.string.btn_favorite_remove));
+                mFavoriteButton.setVisibility(View.VISIBLE);
+                break;
             case MOVIE_REVIEWS_LOADER_ID:
                 mReviewsAdapter.swapCursor(data);
                 break;
@@ -231,6 +253,7 @@ public class MovieActivity extends AppCompatActivity
     public void onLoaderReset(Loader<Cursor> loader) {
         switch (loader.getId()) {
             case MOVIE_DETAILS_LOADER_ID:
+            case MOVIE_FAVORITES_LOADER_ID:
                 break;
             case MOVIE_REVIEWS_LOADER_ID:
                 mReviewsAdapter.swapCursor(null);
@@ -240,6 +263,27 @@ public class MovieActivity extends AppCompatActivity
                 break;
             default:
                 throw new RuntimeException("Loader Not Implemented: " + loader.getId());
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.btn_favorite:
+                if (isFavorite) {
+                    Uri uri = MoviesContract.FavoriteMoviesEntry.CONTENT_URI.buildUpon().appendPath(movieId).build();
+                    if (getContentResolver().delete(uri, null, null) > 0) {
+                        isFavorite = false;
+                        mFavoriteButton.setText(getString(R.string.btn_favorite_add));
+                    }
+
+                } else {
+                    Uri uri = MoviesContract.FavoriteMoviesEntry.CONTENT_URI.buildUpon().appendPath(movieId).build();
+                    if (getContentResolver().insert(uri, null) != null) {
+                        isFavorite = true;
+                        mFavoriteButton.setText(getString(R.string.btn_favorite_remove));
+                    }
+                }
         }
     }
 
