@@ -34,7 +34,7 @@ public class MoviesDbHelper extends SQLiteOpenHelper {
                 MoviesContract.MovieReviewsEntry.COLUMN_NAME_AUTHOR + " TEXT NOT NULL, " +
                 MoviesContract.MovieReviewsEntry.COLUMN_NAME_CONTENT + " TEXT NOT NULL, " +
                 MoviesContract.MovieReviewsEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                MoviesContract.MovieReviewsEntry.COLUMN_NAME_MOVIE_ID + " TEXT UNIQUE, FOREIGN KEY (" +
+                MoviesContract.MovieReviewsEntry.COLUMN_NAME_MOVIE_ID + " TEXT NOT NULL, FOREIGN KEY (" +
                 MoviesContract.MovieReviewsEntry.COLUMN_NAME_MOVIE_ID + ") REFERENCES " +
                 MoviesContract.MoviesEntry.TABLE_NAME + " ("
                 + MoviesContract.MoviesEntry.COLUMN_NAME_MOVIE_ID + ") ON DELETE CASCADE" +
@@ -42,10 +42,10 @@ public class MoviesDbHelper extends SQLiteOpenHelper {
         final String SQL_CREATE_MOVIE_VIDEOS_TABLE = "CREATE TABLE " +
                 MoviesContract.MovieVideosEntry.TABLE_NAME + " (" +
                 MoviesContract.MovieVideosEntry.COLUMN_NAME_SITE + " TEXT NOT NULL, " +
-                MoviesContract.MovieVideosEntry.COLUMN_NAME_KEY + " TEXT NOT NULL, " +
+                MoviesContract.MovieVideosEntry.COLUMN_NAME_KEY + " TEXT UNIQUE, " +
                 MoviesContract.MovieVideosEntry.COLUMN_NAME_TYPE + " TEXT NOT NULL, " +
                 MoviesContract.MovieVideosEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                MoviesContract.MovieVideosEntry.COLUMN_NAME_MOVIE_ID + " TEXT UNIQUE, FOREIGN KEY (" +
+                MoviesContract.MovieVideosEntry.COLUMN_NAME_MOVIE_ID + " TEXT NOT NULL, FOREIGN KEY (" +
                 MoviesContract.MovieVideosEntry.COLUMN_NAME_MOVIE_ID + ") REFERENCES " +
                 MoviesContract.MoviesEntry.TABLE_NAME + " ("
                 + MoviesContract.MoviesEntry.COLUMN_NAME_MOVIE_ID + ") ON DELETE CASCADE" +

@@ -6,6 +6,10 @@
     <string name="added_to_favorites_action"> added to favorites</string>
     <string name="removed_from_favorites_action"> removed from favorites</string>
 
+    <!-- Movie Activity Strings -->
+    <string name="btn_favorite_add">Add to favorites</string>
+    <string name="btn_favorite_remove">Remove from favorites</string>
+
     <!-- Settings Strings -->
     <string name="action_settings">Settings</string>
     <!-- Sorting Preference Labels -->

@@ -55,6 +55,14 @@
                     android:paddingRight="@dimen/activity_horizontal_margin"
                     android:paddingTop="@dimen/activity_vertical_margin">
 
+                    <Button
+                        android:id="@+id/btn_favorite"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@color/colorPrimary"
+                        android:textColor="@android:color/white"
+                        android:visibility="invisible"/>
+
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -72,6 +80,7 @@
                         android:layout_gravity="center_vertical"
                         android:gravity="end"
                         android:textSize="18sp"/>
+
                 </LinearLayout>
 
             </LinearLayout>

@@ -209,7 +209,7 @@ public class MoviesContentProvider extends ContentProvider {
                 rowsInserted = 0;
                 try {
                     for (ContentValues value : values) {
-                        long _id = db.insertWithOnConflict(MoviesEntry.TABLE_NAME, null, value, SQLiteDatabase.CONFLICT_REPLACE);
+                        long _id = db.insertWithOnConflict(MoviesEntry.TABLE_NAME, null, value, SQLiteDatabase.CONFLICT_IGNORE);
                         if (_id != -1) {
                             rowsInserted++;
                         }
@@ -224,12 +224,12 @@ public class MoviesContentProvider extends ContentProvider {
                 rowsInserted = 0;
                 try {
                     for (ContentValues value : values) {
-                        long _id = db.insertWithOnConflict(MoviesEntry.TABLE_NAME, null, value, SQLiteDatabase.CONFLICT_REPLACE);
+                        long _id = db.insertWithOnConflict(MoviesEntry.TABLE_NAME, null, value, SQLiteDatabase.CONFLICT_IGNORE);
                         if (_id != -1) {
                             String movieId = value.getAsString(MoviesEntry.COLUMN_NAME_MOVIE_ID);
                             ContentValues cv = new ContentValues();
                             cv.put(PopularMoviesEntry.COLUMN_NAME_MOVIE_ID, movieId);
-                            if (db.insertWithOnConflict(PopularMoviesEntry.TABLE_NAME, null, cv, SQLiteDatabase.CONFLICT_REPLACE) != -1) {
+                            if (db.insertWithOnConflict(PopularMoviesEntry.TABLE_NAME, null, cv, SQLiteDatabase.CONFLICT_IGNORE) != -1) {
                                 rowsInserted++;
                             }
                         }
@@ -244,12 +244,12 @@ public class MoviesContentProvider extends ContentProvider {
                 rowsInserted = 0;
                 try {
                     for (ContentValues value : values) {
-                        long _id = db.insertWithOnConflict(MoviesEntry.TABLE_NAME, null, value, SQLiteDatabase.CONFLICT_REPLACE);
+                        long _id = db.insertWithOnConflict(MoviesEntry.TABLE_NAME, null, value, SQLiteDatabase.CONFLICT_IGNORE);
                         if (_id != -1) {
                             String movieId = value.getAsString(MoviesEntry.COLUMN_NAME_MOVIE_ID);
                             ContentValues cv = new ContentValues();
                             cv.put(TopRatedMoviesEntry.COLUMN_NAME_MOVIE_ID, movieId);
-                            if (db.insertWithOnConflict(TopRatedMoviesEntry.TABLE_NAME, null, cv, SQLiteDatabase.CONFLICT_REPLACE) != -1) {
+                            if (db.insertWithOnConflict(TopRatedMoviesEntry.TABLE_NAME, null, cv, SQLiteDatabase.CONFLICT_IGNORE) != -1) {
                                 rowsInserted++;
                             }
                         }
@@ -264,7 +264,7 @@ public class MoviesContentProvider extends ContentProvider {
                 rowsInserted = 0;
                 try {
                     for (ContentValues value : values) {
-                        long _id = db.insertWithOnConflict(MovieReviewsEntry.TABLE_NAME, null, value, SQLiteDatabase.CONFLICT_REPLACE);
+                        long _id = db.insertWithOnConflict(MovieReviewsEntry.TABLE_NAME, null, value, SQLiteDatabase.CONFLICT_IGNORE);
                         if (_id != -1) {
                             rowsInserted++;
                         }
@@ -279,7 +279,7 @@ public class MoviesContentProvider extends ContentProvider {
                 rowsInserted = 0;
                 try {
                     for (ContentValues value : values) {
-                        long _id = db.insertWithOnConflict(MovieVideosEntry.TABLE_NAME, null, value, SQLiteDatabase.CONFLICT_REPLACE);
+                        long _id = db.insertWithOnConflict(MovieVideosEntry.TABLE_NAME, null, value, SQLiteDatabase.CONFLICT_IGNORE);
                         if (_id != -1) {
                             rowsInserted++;
                         }
@@ -314,7 +314,7 @@ public class MoviesContentProvider extends ContentProvider {
 
         switch (match) {
             case MOVIES:
-                id = db.insertWithOnConflict(MoviesEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+                id = db.insertWithOnConflict(MoviesEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
                 if (id > 0) {
                     returnUri = ContentUris.withAppendedId(MoviesEntry.CONTENT_URI, id);
                 } else {
@@ -322,7 +322,7 @@ public class MoviesContentProvider extends ContentProvider {
                 }
                 break;
             case MOVIE_REVIEWS:
-                id = db.insertWithOnConflict(MovieReviewsEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+                id = db.insertWithOnConflict(MovieReviewsEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
                 if (id > 0) {
                     returnUri = ContentUris.withAppendedId(MovieReviewsEntry.CONTENT_URI, id);
                 } else {
@@ -330,7 +330,7 @@ public class MoviesContentProvider extends ContentProvider {
                 }
                 break;
             case MOVIE_VIDEOS:
-                id = db.insertWithOnConflict(MovieVideosEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+                id = db.insertWithOnConflict(MovieVideosEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
                 if (id > 0) {
                     returnUri = ContentUris.withAppendedId(MovieVideosEntry.CONTENT_URI, id);
                 } else {
@@ -338,13 +338,13 @@ public class MoviesContentProvider extends ContentProvider {
                 }
                 break;
             case POPULAR_MOVIES:
-                id = db.insertWithOnConflict(MoviesEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+                id = db.insertWithOnConflict(MoviesEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
                 if (id > 0) {
                     returnUri = ContentUris.withAppendedId(MoviesEntry.CONTENT_URI, id);
                     String movieId = values.getAsString(MoviesEntry.COLUMN_NAME_MOVIE_ID);
                     ContentValues cv = new ContentValues();
                     cv.put(PopularMoviesEntry.COLUMN_NAME_MOVIE_ID, movieId);
-                    if (db.insertWithOnConflict(PopularMoviesEntry.TABLE_NAME, null, cv, SQLiteDatabase.CONFLICT_REPLACE) <= 0) {
+                    if (db.insertWithOnConflict(PopularMoviesEntry.TABLE_NAME, null, cv, SQLiteDatabase.CONFLICT_IGNORE) <= 0) {
                         throw new SQLiteException("Failed to insert row into popular");
                     }
                 } else {
@@ -352,13 +352,13 @@ public class MoviesContentProvider extends ContentProvider {
                 }
                 break;
             case TOP_RATED_MOVIES:
-                id = db.insertWithOnConflict(MoviesEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+                id = db.insertWithOnConflict(MoviesEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
                 if (id > 0) {
                     returnUri = ContentUris.withAppendedId(MoviesEntry.CONTENT_URI, id);
                     String movieId = values.getAsString(MoviesEntry.COLUMN_NAME_MOVIE_ID);
                     ContentValues cv = new ContentValues();
                     cv.put(TopRatedMoviesEntry.COLUMN_NAME_MOVIE_ID, movieId);
-                    if (db.insertWithOnConflict(TopRatedMoviesEntry.TABLE_NAME, null, cv, SQLiteDatabase.CONFLICT_REPLACE) <= 0) {
+                    if (db.insertWithOnConflict(TopRatedMoviesEntry.TABLE_NAME, null, cv, SQLiteDatabase.CONFLICT_IGNORE) <= 0) {
                         throw new SQLiteException("Failed to insert row into top rated");
                     }
                 } else {
@@ -366,7 +366,7 @@ public class MoviesContentProvider extends ContentProvider {
                 }
                 break;
             case FAVORITE_MOVIES:
-                id = db.insertWithOnConflict(FavoriteMoviesEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+                id = db.insertWithOnConflict(FavoriteMoviesEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
                 if (id > 0) {
                     returnUri = ContentUris.withAppendedId(FavoriteMoviesEntry.CONTENT_URI, id);
                 } else {
@@ -377,7 +377,7 @@ public class MoviesContentProvider extends ContentProvider {
                 String movieId =  uri.getPathSegments().get(1);
                 ContentValues cv = new ContentValues();
                 cv.put(FavoriteMoviesEntry.COLUMN_NAME_MOVIE_ID, movieId);
-                id = db.insertWithOnConflict(FavoriteMoviesEntry.TABLE_NAME, null, cv, SQLiteDatabase.CONFLICT_REPLACE);
+                id = db.insertWithOnConflict(FavoriteMoviesEntry.TABLE_NAME, null, cv, SQLiteDatabase.CONFLICT_IGNORE);
                 if (id <= 0) {
                     throw new SQLiteException("Failed to insert row into Favorites");
                 }
