@@ -94,15 +94,15 @@
                 android:paddingLeft="@dimen/activity_horizontal_margin"
                 android:textSize="16sp"/>
 
-            <ListView
-                android:id="@+id/lv_videos"
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/rv_videos"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:paddingRight="@dimen/activity_horizontal_margin"
                 android:paddingLeft="@dimen/activity_horizontal_margin"/>
 
-            <ListView
-                android:id="@+id/lv_reviews"
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/rv_reviews"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingRight="@dimen/activity_horizontal_margin"

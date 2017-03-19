@@ -9,25 +9,23 @@ import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.graphics.Palette;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.android.popularmovies.R;
 import com.example.android.popularmovies.data.MoviesContract;
 import com.example.android.popularmovies.model.MovieUtils;
 import com.example.android.popularmovies.sync.FetchMovieDetailsIntentService;
+import com.example.android.popularmovies.view.adapters.ReviewAdapter;
+import com.example.android.popularmovies.view.adapters.VideoAdapter;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Transformation;
@@ -54,14 +52,12 @@ public class MovieActivity extends AppCompatActivity
     TextView mRatingTextView;
     TextView mOverviewTextView;
     ImageView mPosterImageView;
-    ListView mReviewsListView;
-    ListView mVideosListView;
+    RecyclerView mReviewsRecyclerView;
+    RecyclerView mVideosRecyclerView;
     Button mFavoriteButton;
 
-    SimpleCursorAdapter mReviewsAdapter;
-    SimpleCursorAdapter mVideosAdapter;
-    ProgressBar progressBarReviews;
-    ProgressBar progressBarVideos;
+    ReviewAdapter mReviewsAdapter;
+    VideoAdapter mVideosAdapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -79,49 +75,25 @@ public class MovieActivity extends AppCompatActivity
         mRatingTextView = (TextView) findViewById(R.id.tv_rating);
         mOverviewTextView = (TextView) findViewById(R.id.tv_overview);
         mPosterImageView = (ImageView) findViewById(R.id.iv_poster);
-        mReviewsListView = (ListView) findViewById(R.id.lv_reviews);
-        mVideosListView = (ListView) findViewById(R.id.lv_videos);
+        mReviewsRecyclerView = (RecyclerView) findViewById(R.id.rv_reviews);
+        mVideosRecyclerView = (RecyclerView) findViewById(R.id.rv_videos);
         mFavoriteButton = (Button) findViewById(R.id.btn_favorite);
 
         mFavoriteButton.setOnClickListener(this);
 
-        /* Set up ListViews */
-        mReviewsListView.setClickable(false);
-        /* Set up progressBars */
-        progressBarReviews = new ProgressBar(this);
-        progressBarReviews.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
-        progressBarReviews.setIndeterminate(true);
-        mReviewsListView.setEmptyView(progressBarReviews);
-        ViewGroup root = (ViewGroup) findViewById(R.id.ll_movie_details);
-        root.addView(progressBarReviews);
-        progressBarVideos = new ProgressBar(this);
-        progressBarVideos.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
-        progressBarVideos.setIndeterminate(true);
-        mVideosListView.setEmptyView(progressBarVideos);
-        root.addView(progressBarVideos);
+        /* Set up RecyclerViews */
+        mReviewsRecyclerView.setClickable(false);
         /* Set up adapters */
-        String[] fromColumnsReview = {MoviesContract.MovieReviewsEntry.COLUMN_NAME_AUTHOR,
-                MoviesContract.MovieReviewsEntry.COLUMN_NAME_CONTENT};
-        int[] toViewsReview = {R.id.tv_item_author, R.id.tv_item_content};
-        String[] fromColumnsVideo = {MoviesContract.MovieVideosEntry.COLUMN_NAME_TYPE};
-        int[] toViewsVideo ={R.id.tv_item_video};
-        mReviewsAdapter = new SimpleCursorAdapter(this,
-                R.layout.review_list_item,
-                null,
-                fromColumnsReview,
-                toViewsReview,
-                0);
-        mVideosAdapter = new SimpleCursorAdapter(this,
-                R.layout.video_list_item,
-                null,
-                fromColumnsVideo,
-                toViewsVideo,
-                0);
+        LinearLayoutManager reviewsLayoutManager = new LinearLayoutManager(this);
+        mReviewsRecyclerView.setLayoutManager(reviewsLayoutManager);
+        LinearLayoutManager moviesLayoutManager = new LinearLayoutManager(this);
+        mVideosRecyclerView.setLayoutManager(moviesLayoutManager);
+        mVideosRecyclerView.setHasFixedSize(true);
+        mReviewsAdapter = new ReviewAdapter(this);
+        mVideosAdapter = new VideoAdapter(this);
         /* Add adapters to ListViews */
-        mReviewsListView.setAdapter(mReviewsAdapter);
-        mVideosListView.setAdapter(mVideosAdapter);
+        mReviewsRecyclerView.setAdapter(mReviewsAdapter);
+        mVideosRecyclerView.setAdapter(mVideosAdapter);
 
         String movieId = getIntent().getStringExtra(MainActivity.MOVIE_EXTRA);
 
@@ -179,7 +151,6 @@ public class MovieActivity extends AppCompatActivity
         if (data.getCount() < 1) {
             switch (loader.getId()) {
                 case MOVIE_REVIEWS_LOADER_ID:
-                    progressBarReviews.setVisibility(View.GONE);
                     return;
                 case MOVIE_FAVORITES_LOADER_ID:
                     isFavorite = false;
@@ -187,7 +158,6 @@ public class MovieActivity extends AppCompatActivity
                     mFavoriteButton.setVisibility(View.VISIBLE);
                     return;
                 case MOVIE_VIDEOS_LOADER_ID:
-                    progressBarVideos.setVisibility(View.GONE);
                     return;
                 default:
                     return;

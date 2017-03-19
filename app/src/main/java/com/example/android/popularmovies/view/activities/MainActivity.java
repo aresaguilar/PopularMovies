@@ -17,7 +17,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.example.android.popularmovies.R;
 import com.example.android.popularmovies.data.MoviesContract;
@@ -37,10 +36,8 @@ public class MainActivity extends AppCompatActivity
 
     /* View related variables */
     private RecyclerView mMoviesList;
-    private int mPosition = RecyclerView.NO_POSITION;
     private MovieAdapter mAdapter;
     private ProgressBar mLoadingProgressBar;
-    private Toast mToast;
 
     /* Preferences */
     private String sort_option;

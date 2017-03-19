@@ -26,7 +26,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
     private Context mContext;
     private Cursor mCursor;
     private ListItemClickListener mListener;
-    private RecyclerView mRecyclerView;
 
     public MovieAdapter (Context context, ListItemClickListener listener) {
         this.mContext = context;
@@ -46,13 +45,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
                 .inflate(R.layout.film_list_item, parent, false);
 
         return new MovieViewHolder(view);
-    }
-
-    @Override
-    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
-        super.onAttachedToRecyclerView(recyclerView);
-
-        mRecyclerView = recyclerView;
     }
 
     @Override
