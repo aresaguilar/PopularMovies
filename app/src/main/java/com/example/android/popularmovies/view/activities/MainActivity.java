@@ -133,28 +133,12 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onListItemStar(String id) {
-        if (mToast != null) {
-            mToast.cancel();
-        }
-        mToast = Toast.makeText(this,
-                id +" "+ getString(R.string.added_to_favorites_action),
-                Toast.LENGTH_LONG);
-        mToast.show();
-
         Uri uri = MoviesContract.FavoriteMoviesEntry.CONTENT_URI.buildUpon().appendPath(id).build();
         getContentResolver().insert(uri, null);
     }
 
     @Override
     public void onListItemUnstar(String id) {
-        if (mToast != null) {
-            mToast.cancel();
-        }
-        mToast = Toast.makeText(this,
-                id +" "+ getString(R.string.removed_from_favorites_action),
-                Toast.LENGTH_LONG);
-        mToast.show();
-
         Uri uri = MoviesContract.FavoriteMoviesEntry.CONTENT_URI.buildUpon().appendPath(id).build();
         getContentResolver().delete(uri, null, null);
     }

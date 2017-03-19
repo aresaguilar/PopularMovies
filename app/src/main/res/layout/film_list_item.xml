@@ -12,14 +12,15 @@
             android:layout_gravity="center"
             android:adjustViewBounds="true"/>
 
-        <com.like.LikeButton
-            app:icon_type="star"
-            app:icon_size="25dp"
+        <com.github.ivbaranov.mfb.MaterialFavoriteButton
             android:id="@+id/btn_item_star"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:anim_scale_factor="2"
-            android:layout_gravity="end"/>
+            android:layout_gravity="end"
+            app:mfb_animate_favorite="true"
+            app:mfb_animate_unfavorite="false"
+            app:mfb_color="white"
+            app:mfb_padding="4"/>
 
 
 </FrameLayout>

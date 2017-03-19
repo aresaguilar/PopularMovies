@@ -13,8 +13,7 @@ import com.example.android.popularmovies.R;
 import com.example.android.popularmovies.data.MoviesContract;
 import com.example.android.popularmovies.data.MoviesContract.MoviesEntry;
 import com.example.android.popularmovies.model.MovieUtils;
-import com.like.LikeButton;
-import com.like.OnLikeListener;
+import com.github.ivbaranov.mfb.MaterialFavoriteButton;
 import com.squareup.picasso.Picasso;
 
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHolder> {
@@ -66,7 +65,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
 
         View itemView;
         ImageView listItemImageView;
-        LikeButton listItemFavoriteButton;
+        MaterialFavoriteButton listItemFavoriteButton;
 
         public MovieViewHolder(View itemView) {
             super(itemView);
@@ -76,19 +75,17 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
             listItemImageView = (ImageView) itemView.findViewById(R.id.iv_item_poster);
             listItemImageView.setOnClickListener(this);
 
-            listItemFavoriteButton = (LikeButton) itemView.findViewById(R.id.btn_item_star);
-            listItemFavoriteButton.setOnLikeListener(
-                    new OnLikeListener() {
+            listItemFavoriteButton = (MaterialFavoriteButton) itemView.findViewById(R.id.btn_item_star);
+            listItemFavoriteButton.setOnFavoriteAnimationEndListener(
+                    new MaterialFavoriteButton.OnFavoriteAnimationEndListener() {
                         @Override
-                        public void liked(LikeButton likeButton) {
-                            String movieId = (String) likeButton.getTag();
-                            mListener.onListItemStar(movieId);
-                        }
-
-                        @Override
-                        public void unLiked(LikeButton likeButton) {
-                            String movieId = (String) likeButton.getTag();
-                            mListener.onListItemUnstar(movieId);
+                        public void onAnimationEnd(MaterialFavoriteButton buttonView, boolean favorite) {
+                            String movieId = (String) buttonView.getTag();
+                            if (favorite) {
+                                mListener.onListItemStar(movieId);
+                            } else {
+                                mListener.onListItemUnstar(movieId);
+                            }
                         }
                     });
         }
@@ -113,9 +110,9 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
                     null, null, null, null);
 
             if (cursor.getCount() > 0) {
-                listItemFavoriteButton.setLiked(true);
+                listItemFavoriteButton.setFavorite(true, false);
             } else {
-                listItemFavoriteButton.setLiked(false);
+                listItemFavoriteButton.setFavorite(false, true);
             }
 
             Picasso.with(listItemImageView.getContext())

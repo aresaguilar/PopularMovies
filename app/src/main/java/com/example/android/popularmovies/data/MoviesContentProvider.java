@@ -378,9 +378,6 @@ public class MoviesContentProvider extends ContentProvider {
                 ContentValues cv = new ContentValues();
                 cv.put(FavoriteMoviesEntry.COLUMN_NAME_MOVIE_ID, movieId);
                 id = db.insertWithOnConflict(FavoriteMoviesEntry.TABLE_NAME, null, cv, SQLiteDatabase.CONFLICT_IGNORE);
-                if (id <= 0) {
-                    throw new SQLiteException("Failed to insert row into Favorites");
-                }
                 returnUri = ContentUris.withAppendedId(FavoriteMoviesEntry.CONTENT_URI, id);
                 break;
             default:
