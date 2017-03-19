@@ -7,6 +7,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.ToggleButton;
@@ -24,6 +26,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
     private Context mContext;
     private Cursor mCursor;
     private ListItemClickListener mListener;
+    private RecyclerView mRecyclerView;
 
     public MovieAdapter (Context context, ListItemClickListener listener) {
         this.mContext = context;
@@ -43,6 +46,13 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
                 .inflate(R.layout.film_list_item, parent, false);
 
         return new MovieViewHolder(view);
+    }
+
+    @Override
+    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+
+        mRecyclerView = recyclerView;
     }
 
     @Override
@@ -77,18 +87,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
             listItemImageView.setOnClickListener(this);
 
             listItemFavoriteButton = (ToggleButton) itemView.findViewById(R.id.btn_item_star);
-            listItemFavoriteButton.setOnCheckedChangeListener(
-                    new CompoundButton.OnCheckedChangeListener() {
-                        @Override
-                        public void onCheckedChanged(CompoundButton buttonView, boolean favorite) {
-                            String movieId = (String) buttonView.getTag();
-                            if (favorite) {
-                                mListener.onListItemStar(movieId);
-                            } else {
-                                mListener.onListItemUnstar(movieId);
-                            }
-                        }
-                    });
         }
 
         void bind(int position) {
@@ -110,11 +108,28 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
                     MoviesContract.FavoriteMoviesEntry.CONTENT_URI.buildUpon().appendPath(movieId).build(),
                     null, null, null, null);
 
+            listItemFavoriteButton.setOnCheckedChangeListener(null);
+
             if (cursor.getCount() > 0) {
                 listItemFavoriteButton.setChecked(true);
             } else {
                 listItemFavoriteButton.setChecked(false);
             }
+
+            listItemFavoriteButton.setOnCheckedChangeListener(
+                    new CompoundButton.OnCheckedChangeListener() {
+                        @Override
+                        public void onCheckedChanged(CompoundButton buttonView, boolean favorite) {
+                            String movieId = (String) buttonView.getTag();
+                            if (favorite) {
+                                mListener.onListItemStar(movieId);
+                                Animation mRotation = AnimationUtils.loadAnimation(mContext, R.anim.rotator);
+                                listItemFavoriteButton.startAnimation(mRotation);
+                            } else {
+                                mListener.onListItemUnstar(movieId);
+                            }
+                        }
+                    });
 
             Picasso.with(listItemImageView.getContext())
                     .load(MovieUtils.getPosterUrl(poster_path, MovieUtils.POSTER_SIZE_MOBILE))
