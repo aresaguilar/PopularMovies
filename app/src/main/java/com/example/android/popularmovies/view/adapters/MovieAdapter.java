@@ -7,13 +7,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.ToggleButton;
 
 import com.example.android.popularmovies.R;
 import com.example.android.popularmovies.data.MoviesContract;
 import com.example.android.popularmovies.data.MoviesContract.MoviesEntry;
 import com.example.android.popularmovies.model.MovieUtils;
-import com.github.ivbaranov.mfb.MaterialFavoriteButton;
 import com.squareup.picasso.Picasso;
 
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHolder> {
@@ -65,7 +66,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
 
         View itemView;
         ImageView listItemImageView;
-        MaterialFavoriteButton listItemFavoriteButton;
+        ToggleButton listItemFavoriteButton;
 
         public MovieViewHolder(View itemView) {
             super(itemView);
@@ -75,11 +76,11 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
             listItemImageView = (ImageView) itemView.findViewById(R.id.iv_item_poster);
             listItemImageView.setOnClickListener(this);
 
-            listItemFavoriteButton = (MaterialFavoriteButton) itemView.findViewById(R.id.btn_item_star);
-            listItemFavoriteButton.setOnFavoriteAnimationEndListener(
-                    new MaterialFavoriteButton.OnFavoriteAnimationEndListener() {
+            listItemFavoriteButton = (ToggleButton) itemView.findViewById(R.id.btn_item_star);
+            listItemFavoriteButton.setOnCheckedChangeListener(
+                    new CompoundButton.OnCheckedChangeListener() {
                         @Override
-                        public void onAnimationEnd(MaterialFavoriteButton buttonView, boolean favorite) {
+                        public void onCheckedChanged(CompoundButton buttonView, boolean favorite) {
                             String movieId = (String) buttonView.getTag();
                             if (favorite) {
                                 mListener.onListItemStar(movieId);
@@ -110,9 +111,9 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
                     null, null, null, null);
 
             if (cursor.getCount() > 0) {
-                listItemFavoriteButton.setFavorite(true, false);
+                listItemFavoriteButton.setChecked(true);
             } else {
-                listItemFavoriteButton.setFavorite(false, true);
+                listItemFavoriteButton.setChecked(false);
             }
 
             Picasso.with(listItemImageView.getContext())

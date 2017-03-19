@@ -36,6 +36,5 @@ dependencies {
     compile 'com.android.support:palette-v7:25.1.1'
     compile 'com.android.support:preference-v7:25.1.1'
     compile 'com.squareup.picasso:picasso:2.5.2'
-    compile 'com.github.ivbaranov:materialfavoritebutton:0.1.2'
     testCompile 'junit:junit:4.12'
 }
