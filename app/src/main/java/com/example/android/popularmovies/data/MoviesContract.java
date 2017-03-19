@@ -44,6 +44,7 @@ public final class MoviesContract {
         public static final String TABLE_NAME = "movie_details";
         public static final String COLUMN_NAME_AUTHOR = "author";
         public static final String COLUMN_NAME_CONTENT = "content";
+        public static final String COLUMN_NAME_ID = "reviewId";
     }
 
     public static final class MovieVideosEntry implements MovieColumns, BaseColumns {

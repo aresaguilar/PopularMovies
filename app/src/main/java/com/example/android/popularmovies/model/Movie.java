@@ -26,10 +26,12 @@ public class Movie implements Parcelable {
     public class MovieReview {
         private String mAuthor;
         private String mReview;
+        private String mId;
 
-        public MovieReview(String author, String review) {
+        public MovieReview(String author, String review, String id) {
             mAuthor = author;
             mReview = review;
+            mId = id;
         }
 
         public String getAuthor() {
@@ -38,6 +40,10 @@ public class Movie implements Parcelable {
 
         public String getReview() {
             return mReview;
+        }
+
+        public String getId() {
+            return mId;
         }
     }
 

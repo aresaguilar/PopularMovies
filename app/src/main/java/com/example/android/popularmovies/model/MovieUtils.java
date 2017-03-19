@@ -63,7 +63,8 @@ public class MovieUtils {
                 JSONObject indexObject = resultsArray.getJSONObject(i);
                 Movie.MovieReview indexMovieReview = m.new MovieReview(
                         indexObject.getString("author"),
-                        indexObject.getString("content"));
+                        indexObject.getString("content"),
+                        indexObject.getString("id"));
                 movieReviewArrayList.add(indexMovieReview);
             }
         } catch (JSONException e) {
@@ -119,6 +120,7 @@ public class MovieUtils {
         ContentValues cv = new ContentValues();
 
         cv.put(MoviesContract.MovieReviewsEntry.COLUMN_NAME_MOVIE_ID, movieId);
+        cv.put(MoviesContract.MovieReviewsEntry.COLUMN_NAME_ID, review.getId());
         cv.put(MoviesContract.MovieReviewsEntry.COLUMN_NAME_AUTHOR, review.getAuthor());
         cv.put(MoviesContract.MovieReviewsEntry.COLUMN_NAME_CONTENT, review.getReview());
 
