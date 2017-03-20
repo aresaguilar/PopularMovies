@@ -205,7 +205,8 @@ public class MovieActivity extends AppCompatActivity
                 mFavoriteButton.setVisibility(View.VISIBLE);
                 break;
             case MOVIE_REVIEWS_LOADER_ID:
-                mReviewsAdapter.swapCursor(data);
+                if (mReviewsAdapter.getItemCount() != data.getCount())
+                    mReviewsAdapter.swapCursor(data);
                 break;
             case MOVIE_VIDEOS_LOADER_ID:
                 String key = MovieUtils.getBestTrailerYouTubeKey(data);

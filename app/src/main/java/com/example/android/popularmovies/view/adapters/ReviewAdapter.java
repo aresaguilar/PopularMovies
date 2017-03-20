@@ -21,6 +21,7 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewView
 
     public ReviewAdapter (Context context) {
         this.mContext = context;
+        this.setHasStableIds(true);
     }
 
     @Override
