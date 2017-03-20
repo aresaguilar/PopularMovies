@@ -1,5 +1,6 @@
 package com.example.android.popularmovies.view.activities;
 
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -25,7 +26,6 @@ import com.example.android.popularmovies.data.MoviesContract;
 import com.example.android.popularmovies.model.MovieUtils;
 import com.example.android.popularmovies.sync.FetchMovieDetailsIntentService;
 import com.example.android.popularmovies.view.adapters.ReviewAdapter;
-import com.example.android.popularmovies.view.adapters.VideoAdapter;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Transformation;
@@ -53,11 +53,10 @@ public class MovieActivity extends AppCompatActivity
     TextView mOverviewTextView;
     ImageView mPosterImageView;
     RecyclerView mReviewsRecyclerView;
-    RecyclerView mVideosRecyclerView;
     Button mFavoriteButton;
+    Button mTrailerButton;
 
     ReviewAdapter mReviewsAdapter;
-    VideoAdapter mVideosAdapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -76,24 +75,21 @@ public class MovieActivity extends AppCompatActivity
         mOverviewTextView = (TextView) findViewById(R.id.tv_overview);
         mPosterImageView = (ImageView) findViewById(R.id.iv_poster);
         mReviewsRecyclerView = (RecyclerView) findViewById(R.id.rv_reviews);
-        mVideosRecyclerView = (RecyclerView) findViewById(R.id.rv_videos);
         mFavoriteButton = (Button) findViewById(R.id.btn_favorite);
+        mTrailerButton = (Button) findViewById(R.id.btn_trailer);
 
+        /* Set up click listeners */
         mFavoriteButton.setOnClickListener(this);
+        mTrailerButton.setOnClickListener(this);
 
         /* Set up RecyclerViews */
         mReviewsRecyclerView.setClickable(false);
         /* Set up adapters */
         LinearLayoutManager reviewsLayoutManager = new LinearLayoutManager(this);
         mReviewsRecyclerView.setLayoutManager(reviewsLayoutManager);
-        LinearLayoutManager moviesLayoutManager = new LinearLayoutManager(this);
-        mVideosRecyclerView.setLayoutManager(moviesLayoutManager);
-        mVideosRecyclerView.setHasFixedSize(true);
         mReviewsAdapter = new ReviewAdapter(this);
-        mVideosAdapter = new VideoAdapter(this);
         /* Add adapters to ListViews */
         mReviewsRecyclerView.setAdapter(mReviewsAdapter);
-        mVideosRecyclerView.setAdapter(mVideosAdapter);
 
         String movieId = getIntent().getStringExtra(MainActivity.MOVIE_EXTRA);
 
@@ -212,7 +208,12 @@ public class MovieActivity extends AppCompatActivity
                 mReviewsAdapter.swapCursor(data);
                 break;
             case MOVIE_VIDEOS_LOADER_ID:
-                mVideosAdapter.swapCursor(data);
+                String key = MovieUtils.getBestTrailerYouTubeKey(data);
+                if (null != key) {
+                    mTrailerButton.setTag(key);
+                    mTrailerButton.setVisibility(View.VISIBLE);
+                    Log.d(TAG, "Youtube key: " + key);
+                }
                 break;
             default:
                 throw new RuntimeException("Loader Not Implemented: " + loader.getId());
@@ -229,7 +230,8 @@ public class MovieActivity extends AppCompatActivity
                 mReviewsAdapter.swapCursor(null);
                 break;
             case MOVIE_VIDEOS_LOADER_ID:
-                mVideosAdapter.swapCursor(null);
+                mTrailerButton.setTag(null);
+                mTrailerButton.setVisibility(View.INVISIBLE);
                 break;
             default:
                 throw new RuntimeException("Loader Not Implemented: " + loader.getId());
@@ -254,6 +256,18 @@ public class MovieActivity extends AppCompatActivity
                         mFavoriteButton.setText(getString(R.string.btn_favorite_remove));
                     }
                 }
+                break;
+            case R.id.btn_trailer:
+                String key = mTrailerButton.getTag().toString();
+                Intent appIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + key));
+                Intent webIntent = new Intent(Intent.ACTION_VIEW,
+                        Uri.parse("http://www.youtube.com/watch?v=" + key));
+                try {
+                    startActivity(appIntent);
+                } catch (ActivityNotFoundException ex) {
+                    startActivity(webIntent);
+                }
+                break;
         }
     }
 

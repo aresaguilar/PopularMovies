@@ -62,7 +62,17 @@
                         android:background="@color/colorPrimary"
                         android:textColor="@android:color/white"
                         android:visibility="invisible"
-                        android:layout_marginBottom="90dp"/>
+                        android:layout_marginBottom="@dimen/activity_vertical_margin"/>
+
+                    <Button
+                        android:id="@+id/btn_trailer"
+                        android:text="@string/btn_trailer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@color/colorPrimary"
+                        android:textColor="@android:color/white"
+                        android:visibility="invisible"
+                        android:layout_marginBottom="60dp"/>
 
                     <TextView
                         android:layout_width="match_parent"
@@ -105,25 +115,6 @@
                 android:paddingRight="@dimen/activity_horizontal_margin"
                 android:paddingLeft="@dimen/activity_horizontal_margin"
                 android:textSize="16sp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingRight="@dimen/activity_horizontal_margin"
-                android:paddingLeft="@dimen/activity_horizontal_margin"
-                android:paddingTop="@dimen/activity_vertical_margin"
-                android:text="@string/tv_videos"
-                android:textSize="20dp"
-                android:textColor="@color/colorAccent"
-                android:textStyle="bold"
-                android:gravity="start" />
-
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/rv_videos"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:paddingRight="@dimen/activity_horizontal_margin"
-                android:paddingLeft="@dimen/activity_horizontal_margin" />
 
             <TextView
                 android:layout_width="match_parent"

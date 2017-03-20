@@ -9,8 +9,8 @@
     <!-- Movie Activity Strings -->
     <string name="btn_favorite_add">Add to favorites</string>
     <string name="btn_favorite_remove">Remove from favorites</string>
+    <string name="btn_trailer">Watch trailer</string>
     <string name="tv_overview">Overview</string>
-    <string name="tv_videos">Videos</string>
     <string name="tv_reviews">Reviews</string>
 
     <!-- Settings Strings -->

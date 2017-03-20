@@ -1,6 +1,7 @@
 package com.example.android.popularmovies.model;
 
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.util.Log;
 
 import com.example.android.popularmovies.data.MoviesContract;
@@ -18,6 +19,20 @@ public class MovieUtils {
 
     private static final String POSTER_BASE_URL = "http://image.tmdb.org/t/p/";
     public static final String POSTER_SIZE_MOBILE = "w185";
+
+    public static String getBestTrailerYouTubeKey(Cursor trailers) {
+        String key = null;
+
+        trailers.moveToFirst();
+        while (trailers.moveToNext()) {
+            if (!"YouTube".equals(trailers.getString(trailers.getColumnIndex(MoviesContract.MovieVideosEntry.COLUMN_NAME_SITE))))
+                continue;
+            key = trailers.getString(trailers.getColumnIndex(MoviesContract.MovieVideosEntry.COLUMN_NAME_KEY));
+            if ("Trailer".equals(trailers.getString(trailers.getColumnIndex(MoviesContract.MovieVideosEntry.COLUMN_NAME_TYPE))))
+                return key;
+        }
+        return key;
+    }
 
     public static List<Movie> parseMoviesJSON(String jsonData) {
         ArrayList<Movie> movieArrayList = new ArrayList<>();
