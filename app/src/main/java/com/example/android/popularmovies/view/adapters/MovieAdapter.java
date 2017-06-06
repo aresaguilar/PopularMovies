@@ -61,7 +61,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
 
     public void swapCursor(Cursor newCursor) {
         mCursor = newCursor;
-        notifyItemRangeInserted(0, mCursor.getCount());
+        notifyDataSetChanged();
     }
 
     class MovieViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
